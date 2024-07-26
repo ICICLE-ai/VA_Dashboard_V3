@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d0" for="edge" attr.name="relation" attr.type="string"/>
+<graph edgedefault="directed"><node id="Container"/>
+<node id="uriorcurie"/>
+<node id="Organization"/>
+<node id="Project"/>
+<node id="Program"/>
+<node id="Person"/>
+<node id="GuidelineMandate"/>
+<node id="Dataset"/>
+<node id="Role"/>
+<node id="Tool"/>
+<node id="Infrastructure"/>
+<node id="Literal"/>
+<node id="County"/>
+<node id="OrganizationType"/>
+<node id="OrganizationActivity"/>
+<node id="Issue"/>
+<node id="CWHRHabitatType"/>
+<node id="CommodityType"/>
+<node id="UseCases"/>
+<node id="ProjectType"/>
+<node id="ProgramType"/>
+<node id="GuidelineMandateType"/>
+<node id="GovernmentLevelType"/>
+<node id="PositionType"/>
+<node id="InfrastructureType"/>
+<edge source="Container" target="uriorcurie">
+  <data key="d0">['id']</data>
+</edge>
+<edge source="Container" target="Organization">
+  <data key="d0">['organizations']</data>
+</edge>
+<edge source="Container" target="Project">
+  <data key="d0">['projects']</data>
+</edge>
+<edge source="Container" target="Program">
+  <data key="d0">['programs']</data>
+</edge>
+<edge source="Container" target="Person">
+  <data key="d0">['persons']</data>
+</edge>
+<edge source="Container" target="GuidelineMandate">
+  <data key="d0">['guidelinemandates']</data>
+</edge>
+<edge source="Container" target="Dataset">
+  <data key="d0">['datasets']</data>
+</edge>
+<edge source="Container" target="Role">
+  <data key="d0">['roles']</data>
+</edge>
+<edge source="Container" target="Tool">
+  <data key="d0">['tools']</data>
+</edge>
+<edge source="Container" target="Infrastructure">
+  <data key="d0">['infrastructures']</data>
+</edge>
+<edge source="Organization" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'is_part_of', 'in_ecoregion', 'associated_geography', 'contact', 'taxa', 'ecological_process', 'creator_of', 'mandates', 'has_funding_vehicle']</data>
+</edge>
+<edge source="Organization" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="Organization" target="Organization">
+  <data key="d0">['is_member_of', 'has_partner', 'is_funded_by', 'created_by']</data>
+</edge>
+<edge source="Organization" target="County">
+  <data key="d0">['in_county']</data>
+</edge>
+<edge source="Organization" target="OrganizationType">
+  <data key="d0">['has_organization_type']</data>
+</edge>
+<edge source="Organization" target="Program">
+  <data key="d0">['is_funded_by']</data>
+</edge>
+<edge source="Organization" target="Project">
+  <data key="d0">['is_funded_by']</data>
+</edge>
+<edge source="Organization" target="OrganizationActivity">
+  <data key="d0">['has_organization_activity']</data>
+</edge>
+<edge source="Organization" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Organization" target="CWHRHabitatType">
+  <data key="d0">['cwhr_land_cover']</data>
+</edge>
+<edge source="Organization" target="CommodityType">
+  <data key="d0">['commodity']</data>
+</edge>
+<edge source="Organization" target="GuidelineMandate">
+  <data key="d0">['gm_name', 'implements', 'is_bound_by', 'is_certified_by', 'enforces']</data>
+</edge>
+<edge source="Organization" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="Project" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'is_part_of', 'has_funding_vehicle', 'lead_individual', 'located_in', 'in_ecoregion', 'in_watershed', 'project_details', 'has_indicator', 'has_strategy', 'taxa', 'ecological_process', 'start_year', 'end_year', 'latitude', 'longitude', 'is_contained_in', 'contains', 'intersects', 'creator_of']</data>
+</edge>
+<edge source="Project" target="uriorcurie">
+  <data key="d0">['id', 'occurs_in', 'has_url', 'fsl_doc']</data>
+</edge>
+<edge source="Project" target="ProjectType">
+  <data key="d0">['project_type']</data>
+</edge>
+<edge source="Project" target="Organization">
+  <data key="d0">['lead_organization', 'funding_organization', 'partner_organization', 'is_funded_by']</data>
+</edge>
+<edge source="Project" target="County">
+  <data key="d0">['in_county']</data>
+</edge>
+<edge source="Project" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Project" target="Dataset">
+  <data key="d0">['input_of', 'output_of']</data>
+</edge>
+<edge source="Project" target="CWHRHabitatType">
+  <data key="d0">['cwhr_land_cover']</data>
+</edge>
+<edge source="Project" target="Program">
+  <data key="d0">['is_funded_by']</data>
+</edge>
+<edge source="Project" target="Project">
+  <data key="d0">['is_funded_by']</data>
+</edge>
+<edge source="Project" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="Program" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'lead_individual', 'in_ecoregion', 'taxa']</data>
+</edge>
+<edge source="Program" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="Program" target="ProgramType">
+  <data key="d0">['program_type']</data>
+</edge>
+<edge source="Program" target="Organization">
+  <data key="d0">['lead_organization', 'partner_organization']</data>
+</edge>
+<edge source="Program" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Program" target="GuidelineMandate">
+  <data key="d0">['gm_name']</data>
+</edge>
+<edge source="Program" target="County">
+  <data key="d0">['in_county']</data>
+</edge>
+<edge source="Program" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="Person" target="Literal">
+  <data key="d0">['label', 'full_name', 'last_name', 'first_name', 'email', 'phone', 'note']</data>
+</edge>
+<edge source="Person" target="uriorcurie">
+  <data key="d0">['id']</data>
+</edge>
+<edge source="Person" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Person" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="GuidelineMandate" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'has_date', 'in_ecoregion', 'taxa', 'ecological_process', 'mandates']</data>
+</edge>
+<edge source="GuidelineMandate" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="GuidelineMandate" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="GuidelineMandate" target="GuidelineMandateType">
+  <data key="d0">['guideline_or_mandate_type']</data>
+</edge>
+<edge source="GuidelineMandate" target="GovernmentLevelType">
+  <data key="d0">['government_level']</data>
+</edge>
+<edge source="GuidelineMandate" target="County">
+  <data key="d0">['in_county']</data>
+</edge>
+<edge source="GuidelineMandate" target="CWHRHabitatType">
+  <data key="d0">['cwhr_land_cover']</data>
+</edge>
+<edge source="GuidelineMandate" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="GuidelineMandate" target="Role">
+  <data key="d0">['authorizes', 'binds']</data>
+</edge>
+<edge source="Dataset" target="Literal">
+  <data key="d0">['title', 'label']</data>
+</edge>
+<edge source="Dataset" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="Dataset" target="Organization">
+  <data key="d0">['created_by']</data>
+</edge>
+<edge source="Dataset" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Dataset" target="GuidelineMandate">
+  <data key="d0">['mandated_by']</data>
+</edge>
+<edge source="Dataset" target="UseCases">
+  <data key="d0">['use_case']</data>
+</edge>
+<edge source="Role" target="Literal">
+  <data key="d0">['label', 'title', 'start_year', 'end_year', 'has_role']</data>
+</edge>
+<edge source="Role" target="uriorcurie">
+  <data key="d0">['id']</data>
+</edge>
+<edge source="Role" target="Person">
+  <data key="d0">['has_participant']</data>
+</edge>
+<edge source="Role" target="Organization">
+  <data key="d0">['role_of']</data>
+</edge>
+<edge source="Role" target="Project">
+  <data key="d0">['role_of', 'involved_in']</data>
+</edge>
+<edge source="Role" target="Program">
+  <data key="d0">['involved_in']</data>
+</edge>
+<edge source="Role" target="PositionType">
+  <data key="d0">['position_type']</data>
+</edge>
+<edge source="Tool" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'references']</data>
+</edge>
+<edge source="Tool" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="Tool" target="Organization">
+  <data key="d0">['created_by']</data>
+</edge>
+<edge source="Tool" target="Issue">
+  <data key="d0">['related_sustainability_issue']</data>
+</edge>
+<edge source="Tool" target="Dataset">
+  <data key="d0">['has_input', 'has_output']</data>
+</edge>
+<edge source="Infrastructure" target="Literal">
+  <data key="d0">['title', 'label', 'alias', 'has_capacity', 'in_ecoregion', 'associated_geography', 'taxa']</data>
+</edge>
+<edge source="Infrastructure" target="uriorcurie">
+  <data key="d0">['id', 'has_url']</data>
+</edge>
+<edge source="Infrastructure" target="InfrastructureType">
+  <data key="d0">['infrastructure_type']</data>
+</edge>
+<edge source="Infrastructure" target="Infrastructure">
+  <data key="d0">['is_part_of_infrastructure', 'upstream_infrastructure', 'downstream_infrastructure', 'adjacent_infrastructure', 'intersecting_infrastructure']</data>
+</edge>
+<edge source="Infrastructure" target="Organization">
+  <data key="d0">['organization_owner', 'organization_manager', 'organization_user']</data>
+</edge>
+<edge source="Infrastructure" target="Project">
+  <data key="d0">['involved_in']</data>
+</edge>
+<edge source="Infrastructure" target="Program">
+  <data key="d0">['involved_in']</data>
+</edge>
+<edge source="Infrastructure" target="County">
+  <data key="d0">['in_county']</data>
+</edge>
+<edge source="Infrastructure" target="Issue">
+  <data key="d0">['issue_addressed_on_purpose', 'other_issues_affected']</data>
+</edge>
+<edge source="Infrastructure" target="CWHRHabitatType">
+  <data key="d0">['cwhr_land_cover']</data>
+</edge>
+</graph></graphml>

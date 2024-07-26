@@ -1,0 +1,12 @@
+[
+    "http://vivoweb.org/ontology/core#Project",
+    "http://purl.obolibrary.org/obo/BFO_0000023",
+    "http://vivoweb.org/ontology/core#Program",
+    "https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#Infrastructure",
+    "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#Container",
+    "http://vivoweb.org/ontology/core#Dataset",
+    "http://www.sdsconsortium.org/schemas/sds-okn.owl#Tool",
+    "http://www.sdsconsortium.org/schemas/sds-okn.owl#BestPracticesAndMandates",
+    "http://xmlns.com/foaf/0.1/Organization",
+    "http://xmlns.com/foaf/0.1/Person"
+]

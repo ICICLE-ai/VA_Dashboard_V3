@@ -1,0 +1,176 @@
+{
+	"info": {
+		"_postman_id": "76b35d3b-ceec-451f-842a-2ceb6273f569",
+		"name": "ICICLE API Platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36345730"
+	},
+	"item": [
+		{
+			"name": "Data Collection",
+			"item": [
+				{
+					"name": "DOI Collection CrossRef",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create Concept",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"vitamin\",\r\n    \"iri\": \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/know/concept/create/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"concept",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Concepts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/know/concepts",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"concepts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Instance",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Hex+HexNAc+Neu5Ac\",\r\n    \"concept\": \"5cf1e130-b4c4-48d6-89fd-8a11b5e7baf9\",\r\n    \"item_type\": \"vitamin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/know/instance/create/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"instance",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Instances",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/know/instances",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"instances"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Relation",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"30521\",\r\n    \"definition\": \"30521 hasCategory Even-toed Ungulates\",\r\n    \"inverse\": null,\r\n    \"iri\": \"http://example.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/know/relation/create/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"relation",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Relations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/know/relations",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"know",
+						"relations"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://localhost:8000/api/know"
+		}
+	]
+}

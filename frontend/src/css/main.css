@@ -1,0 +1,99 @@
+@import 'https://cdn.jsdelivr.net/npm/@vue-flow/core@1.20.2/dist/style.css';
+
+@import 'https://cdn.jsdelivr.net/npm/@vue-flow/core@1.20.2/dist/theme-default.css';
+
+@import 'https://cdn.jsdelivr.net/npm/@vue-flow/controls@latest/dist/style.css';
+
+@import 'https://cdn.jsdelivr.net/npm/@vue-flow/minimap@latest/dist/style.css';
+
+@import 'https://cdn.jsdelivr.net/npm/@vue-flow/node-resizer@latest/dist/style.css';
+
+html,
+body,
+#app {
+  margin: 0;
+  padding:0;
+  height: 100%;
+  width:100%;
+
+}
+
+#app {
+  /* text-transform: uppercase; */
+
+  /* font-family: 'JetBrains Mono', monospace; */
+
+  -webkit-font-smoothing: antialiased;
+
+  -moz-osx-font-smoothing: grayscale;
+
+  text-align: center;
+
+  color: #2c3e50;
+
+}
+
+.vue-flow__minimap {
+  transform: scale(75%);
+
+  transform-origin: bottom right;
+
+}
+
+aside{
+    color:black;
+    font-weight:700;
+    border-right:1px solid #eee;
+    padding:15px 10px;
+    font-size:12px;
+    /* background:rgba(16,185,129,.75); */
+    background: white;
+    -webkit-box-shadow:0px 5px 10px 0px rgba(0,0,0,.3);
+    box-shadow:0 5px 10px #0000004d}.dndflow aside .nodes>*{margin-bottom:10px;
+    cursor:pointer;
+    font-weight:500;
+    -webkit-box-shadow:5px 5px 10px 2px rgba(0,0,0,.25);
+    box-shadow:5px 5px 10px 2px #00000040;
+    min-width:25%;
+}
+aside .v-row{
+ margin: 5px;
+}
+aside .drag-node{
+  display: flex;
+  align-items: center; /* Ensure icon and text are vertically aligned */
+  cursor: pointer; /* Change cursor to hand */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow effect */
+  padding: 10px; /* Add padding inside the drag-node for spacing */
+  border-radius: 5px; /* Optional: adds rounded corners for a softer look */
+  margin-bottom: 10px; /* Optional: adds space between multiple drag-nodes if you have them */
+}
+aside .drag-icon {
+  margin-right: 8px; /* Add space between icon and text */
+  color: #555; /* Icon color */
+  font-size: 25px; /* Icon size */
+  /* additional styling */
+}
+aside .description{
+    margin-bottom:10px
+}
+
+/* for node card effect */
+.node-card{
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.node-card:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+.v-row{
+  display: flex;
+  flex-wrap: nowrap;
+  margin: -12px;
+  flex-direction: column-reverse;
+}

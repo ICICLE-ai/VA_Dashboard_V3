@@ -1,0 +1,192 @@
+{
+    "guideline/mandate type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#gmType"
+    ],
+    "date": [
+        "http://purl.org/dc/terms/date"
+    ],
+    "last name": [
+        "http://xmlns.com/foaf/0.1/lastName"
+    ],
+    "habitat type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#habitatType"
+    ],
+    "full name": [
+        "http://xmlns.com/foaf/0.1/name"
+    ],
+    "has participant": [
+        "http://purl.obolibrary.org/obo/RO_0000057"
+    ],
+    "project type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projType"
+    ],
+    "position type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#positionType"
+    ],
+    "role of": [
+        "http://purl.obolibrary.org/obo/RO_0000081"
+    ],
+    "related issue": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#issuesOther"
+    ],
+    "involved in": [
+        "http://purl.obolibrary.org/obo/RO_0002331"
+    ],
+    "commodity": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#commodity"
+    ],
+    "related sustainability issue": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239"
+    ],
+    "organization owner": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgOwner"
+    ],
+    "adjacent infrastructure": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureAdjacent"
+    ],
+    "guideline/mandate name": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#GM_Name"
+    ],
+    "contact": [
+        "http://vivoweb.org/ontology/core#contactInformation"
+    ],
+    "occurs in": [
+        "http://purl.obolibrary.org/obo/BFO_0000066"
+    ],
+    "is funded by": [
+        "http://purl.org/cerif/frapo/isFundedBy"
+    ],
+    "email": [
+        "http://xmlns.com/foaf/0.1/mbox"
+    ],
+    "references": [
+        "http://purl.org/dc/terms/references"
+    ],
+    "mandated by": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#mandatedBy"
+    ],
+    "in watershed": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inWatershed"
+    ],
+    "in county": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty"
+    ],
+    "infrastructure type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureType"
+    ],
+    "capacity": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#hasCapacity"
+    ],
+    "taxa": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa"
+    ],
+    "government level": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#govLevel"
+    ],
+    "endYear": [
+        "http://dbpedia.org/ontology/endYear"
+    ],
+    "participates in": [
+        "http://purl.obolibrary.org/obo/RO_0000056"
+    ],
+    "located in": [
+        "http://purl.obolibrary.org/obo/RO_0001025"
+    ],
+    "ecological process": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#ecologicalProcess"
+    ],
+    "is part of": [
+        "http://purl.org/dc/terms/isPartOf",
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#isPartOfInfra"
+    ],
+    "note": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000243"
+    ],
+    "output of": [
+        "http://purl.obolibrary.org/obo/RO_0002353"
+    ],
+    "funding provided via": [
+        "http://vivoweb.org/ontology/core#hasFundingVehicle"
+    ],
+    "associated geography": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#assocGeo"
+    ],
+    "upstream infrastructure": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureUpstream"
+    ],
+    "title": [
+        "http://purl.org/dc/terms/title"
+    ],
+    "was created by": [
+        "http://iflastandards.info/ns/fr/frbr/frbrer/P2007"
+    ],
+    "project details": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projDetails"
+    ],
+    "has strategy": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#hasStrategy"
+    ],
+    "program type": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#progType"
+    ],
+    "phone": [
+        "http://xmlns.com/foaf/0.1/phone"
+    ],
+    "startYear": [
+        "http://dbpedia.org/ontology/startYear"
+    ],
+    "organization manager": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgManager"
+    ],
+    "organization user": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgUser"
+    ],
+    "has role": [
+        "http://purl.obolibrary.org/obo/RO_0000087"
+    ],
+    "FSL doc": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSLdoc"
+    ],
+    "is member of": [
+        "http://www.w3.org/ns/org#memberOf"
+    ],
+    "has URL": [
+        "http://poderopedia.com/vocab/hasURL"
+    ],
+    "lead organization": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#leadOrg"
+    ],
+    "in ecoregion": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion"
+    ],
+    "has partner": [
+        "http://vivoweb.org/ontology/core#hasCollaborator"
+    ],
+    "organization type": [
+        "http://www.w3.org/ns/org#classification"
+    ],
+    "funding organization": [
+        "http://vivoweb.org/ontology/core#fundingAgentFor"
+    ],
+    "intersecting infrastructure": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureIntersect"
+    ],
+    "downstream infrastructure": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureDownstream"
+    ],
+    "lead individual": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#leadIndividual"
+    ],
+    "partner organization": [
+        "http://vivoweb.org/ontology/core#affiliatedOrganization"
+    ],
+    "first name": [
+        "http://xmlns.com/foaf/0.1/firstName"
+    ],
+    "purpose of infrastructure": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#issuesPurpose"
+    ],
+    "alias": [
+        "http://www.w3.org/2004/02/skos/core#altLabel"
+    ]
+}

@@ -1,0 +1,28 @@
+[
+    {
+        "subject": "Sonoma County Sustainable",
+        "predicate": "ns0__inCounty",
+        "object": "Sonoma County"
+    },
+    {
+        "subject": "Sonoma County Sustainable",
+        "predicate": "ns0__inEcoregion",
+        "object": "Northern California Coast"
+    },
+    {
+        "subject": "Fall River Valley Community Services District",
+        "predicate": "ns0__inCounty",
+        "object": "Shasta County"
+    },
+    {
+        "subject": "Trinity Management Council",
+        "predicate": "ns7__memberOf",
+        "object": "Yurok Tribe"
+    },
+    {
+        "subject": "Yurok Tribe",
+        "predicate": "ns0__FSI_000239",
+        "object": "Cultural Protection and Conservation"
+    }
+
+]
