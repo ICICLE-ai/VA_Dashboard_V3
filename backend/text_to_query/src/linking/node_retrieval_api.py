@@ -23,6 +23,8 @@ class TextRetriever(ABC):
         pass
 
     def get_top_k_sentences(self, query, k=10, distinct=True):
+        if len(self.corpus) == 0:
+            return []
         top_k_indices = self.get_top_k_indices(query, k, distinct)
         top_k_sentences = [self.corpus[i] for i in top_k_indices]
         return top_k_sentences
@@ -86,23 +88,57 @@ class TfidfRetriever(TextRetriever):
 
 
 class SentenceTransformerRetriever(TextRetriever):
-    def __init__(self, corpus, model_name=None, model=None):
+    def __init__(self, corpus, model_name=None, model=None, device='cuda'):
         super().__init__(corpus)
         assert model_name is not None or model is not None, "Either model_name or model should be provided"
         if model is None:
-            self.model = SentenceTransformer(model_name)
+            self.model = SentenceTransformer(model_name).to(device)
         else:
             self.model = model
         self.embeddings = None
         self._preprocess()
 
     def _preprocess(self):
-        with torch.no_grad():
-            self.embeddings = self.model.encode(self.corpus)
+        if len(self.corpus) > 0:
+            with torch.no_grad():
+                self.embeddings = self.model.encode(self.corpus)
+        else:
+            self.embeddings = []
 
     def scores_on_corpus(self, query):
         with torch.no_grad():
             query_embedding = self.model.encode([query])[0]
+            scores = util.pytorch_cos_sim(query_embedding, self.embeddings)[0]
+            return scores.cpu().numpy()
+
+
+class GritLMRetriever(TextRetriever):
+
+    def __init__(self, corpus, model_name='GritLM/GritLM-7B', model=None, instruction=''):
+        from gritlm import GritLM
+
+        super().__init__(corpus)
+        assert model_name is not None or model is not None, "Either model_name or model should be provided"
+        if model is None:
+            self.model = GritLM(model_name, torch_dtype='auto')
+        else:
+            self.model = model
+        self.instruction = instruction
+        self.embeddings = None
+        self._preprocess()
+
+    def gritlm_instruction(self, instruction):
+        return "<|user|>\n" + instruction + "\n<|embed|>\n" if instruction else "<|embed|>\n"
+
+    def _preprocess(self):
+        with torch.no_grad():
+            self.embeddings = self.model.encode(self.corpus, instruction=self.gritlm_instruction(""))
+
+    def scores_on_corpus(self, query):
+        if isinstance(query, str):
+            query = [query]
+        with torch.no_grad():
+            query_embedding = self.model.encode(query, instruction=self.gritlm_instruction(self.instruction))[0]
             scores = util.pytorch_cos_sim(query_embedding, self.embeddings)[0]
             return scores.cpu().numpy()
 

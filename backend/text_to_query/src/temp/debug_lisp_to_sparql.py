@@ -1,4 +1,4 @@
-from pangu.environment.examples.KB.PPODSparqlCache import execute_query
+from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import lisp_to_sparql
 
 if __name__ == '__main__':

@@ -1,6 +1,9 @@
 import json
 import os.path
 from typing import List
+import logging
+
+from backend.milkOligoDB.src.api_client import get_adjacent_relations_by_object, get_adjacent_relations_by_subject
 
 proj_root = os.path.dirname(os.path.abspath(__file__)) + '/../../../../'
 from rdflib import Graph
@@ -13,7 +16,7 @@ with open(rdf_file_path, "r") as f:
 g.parse(data=ttl, format="ttl", publicID='http:/')
 
 
-def execute_query(query: str, endpoint='http://164.107.116.56:3002/sparql'):
+def execute_query(query: str, endpoint='http://localhost:3002/sparql'):
     if endpoint == 'rdflib':
         return execute_query_with_rdflib(query)
     return execute_query_with_virtuoso(query, endpoint)
@@ -61,7 +64,7 @@ def execute_query_with_virtuoso(query: str, endpoint='http://localhost:3002/spar
     return rows
 
 
-class PPODSparqlCache:
+class PPODSparqlService:
 
     def __init__(self, cache_path: str = os.path.join(proj_root, 'data/ppod_cache.json')):
         self.cache_path = cache_path
@@ -111,16 +114,52 @@ class PPODSparqlCache:
             self.cache = json.load(f)
 
     def save_cache(self, path: str):
-        temp_file_path = os.path.join(proj_root, 'data/ppod_cache_temp.json')
-        with open(temp_file_path, 'w') as f:
-            f.write(json.dumps(self.cache))
-        if os.path.isfile(temp_file_path):
-            os.rename(temp_file_path, path)
+        try:
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+
+            # Use an absolute path for the temporary file
+            temp_file_path = os.path.abspath(os.path.join(os.path.dirname(path), 'ppod_cache_temp.json'))
+
+            # Write to the temporary file
+            logging.info(f"Writing to temporary file: {temp_file_path}")
+            with open(temp_file_path, 'w') as f:
+                json.dump(self.cache, f)
+
+            # Check if the temporary file was created successfully
+            if os.path.isfile(temp_file_path):
+                # Try to replace the existing file (if it exists) with the new one
+                logging.info(f"Replacing {path} with {temp_file_path}")
+                os.replace(temp_file_path, path)
+                logging.info("Cache saved successfully")
+            else:
+                raise FileNotFoundError(f"Temporary file {temp_file_path} was not created")
+
+        except Exception as e:
+            logging.error(f"Error saving cache: {str(e)}")
+            # If an error occurs, try to remove the temporary file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+            raise
+
+
+class QueryAPI(PPODSparqlService):
+    def __init__(self):
+        super().__init__()
+
+    def get_entity_in_relations(self, entity: str):
+        return get_adjacent_relations_by_object(entity)
+
+    def get_literal_in_relations(self, literal: str):
+        return get_adjacent_relations_by_object(literal)
+
+    def get_entity_out_relations(self, entity: str):
+        return get_adjacent_relations_by_subject(entity)
 
 
 if __name__ == '__main__':
     sparql = 'SELECT ?s WHERE { ?s ?p ?o } LIMIT 300'
-    results = execute_query(sparql, 'http://164.107.116.56:3002/sparql')
+    results = execute_query(sparql, 'http://localhost:3002/sparql')
     print(results)
     print(len(results))
 

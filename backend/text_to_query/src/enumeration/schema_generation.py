@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from src.enumeration.graph_query import add_node, add_edge, clone_graph_query, get_relations, get_entity_label_list, is_terminal_node, is_question_node
 from src.enumeration.logical_form_util import get_lisp_from_graph_query
-from pangu.environment.examples.KB.PPODSparqlCache import execute_query
+from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import lisp_to_sparql
 
 relation_black_list = {'http://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://schema.org/identifier',

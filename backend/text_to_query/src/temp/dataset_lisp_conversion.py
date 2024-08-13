@@ -2,7 +2,7 @@ import argparse
 import json
 
 from enumeration.schema_generation import simplify_with_prefixes
-from pangu.environment.examples.KB.PPODSparqlCache import execute_query
+from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import replace_r_func_to_inv, lisp_to_sparql
 from pangu.ppod_agent import lisp_to_label
 

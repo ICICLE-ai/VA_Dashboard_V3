@@ -12,16 +12,17 @@ from collections import defaultdict
 
 from tqdm import tqdm
 
-from pangu.environment.examples.KB.PPODSparqlCache import execute_query
+from pangu.environment.examples.KB.PPODSparqlService import execute_query
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--eval', type=str, help='path to eval data', default='exp/sample_queries_valid_98.json')
     parser.add_argument('--llm', type=str, default='gpt-4o')
+    parser.add_argument('--kg_api', action='store_true', help='use KG API to obtain data')
     args = parser.parse_args()
 
     data = json.load(open(args.eval))
-    pangu = PanguForPPOD(openai_api_key=os.getenv('OPENAI_API_KEY'), llm_name=args.llm)
+    pangu = PanguForPPOD(openai_api_key=os.getenv('OPENAI_API_KEY'), llm_name=args.llm, use_kg_api=args.kg_api)
 
     results = []
     metrics = defaultdict(float)
@@ -80,8 +81,12 @@ if __name__ == '__main__':
         metrics[f"{num_edge}_hop_recall"] += recall
         metrics[f"{num_edge}_hop"] += 1
 
-    with open(f'exp/qa_eval_results_{args.llm}.json', 'w') as f:
+    llm_label = args.llm.split('/')[-1]
+    qa_eval_log_path = f'exp/qa_eval_results_{llm_label}.json'
+    with open(qa_eval_log_path, 'w') as f:
         json.dump(results, f, indent=4)
+        print(f'QA eval results saved to {qa_eval_log_path}')
+
     for key in metrics:
         if 'hop' in key:
             metrics[key] /= metrics[f"{key.split('_')[0]}_hop"]

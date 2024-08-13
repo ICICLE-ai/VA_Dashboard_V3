@@ -1,8 +1,14 @@
 import json
+import re
 
 from pangu.environment.environment import Env
-from pangu.environment.examples.KB.PPODSparqlCache import PPODSparqlCache
+from pangu.environment.examples.KB.PPODSparqlService import PPODSparqlService, QueryAPI
 from pangu.language.util import lisp_to_nested_expression, linearize_lisp_expression
+
+
+def is_valid_uuid(uuid_str):
+    uuid_regex = re.compile(r'^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$')
+    return bool(uuid_regex.match(uuid_str))
 
 
 def is_entity(s: str) -> bool:
@@ -10,6 +16,8 @@ def is_entity(s: str) -> bool:
         s = s[1:-1]
     if (s.startswith('fslp:') or s.startswith('http://www.wikidata.org/entity/')
             or s.startswith('https://raw.githubusercontent.com/adhollander/FSLschemas/main/')):
+        return True
+    if is_valid_uuid(s):
         return True
     return False
 
@@ -254,7 +262,7 @@ def lisp_to_sparql(lisp: str) -> str:
 
 
 class PPODEnv(Env):
-    def __init__(self, relations: set, classes: set, relations_to_entity=None, relations_to_literal=None):
+    def __init__(self, relations: set, classes: set, relations_to_entity=None, relations_to_literal=None, use_kg_api=False):
         """
 
         :param relations:
@@ -263,7 +271,10 @@ class PPODEnv(Env):
         :param relations_to_literal: a part of relations that is connected to literals
         """
         super().__init__()
-        self.cache = PPODSparqlCache()
+        if use_kg_api:
+            self.cache = QueryAPI()
+        else:
+            self.cache = PPODSparqlService()
         self.relations = relations - {'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#label',
                                       'http://www.w3.org/2004/02/skos/core#altLabel', 'http://purl.org/dc/terms/title', 'http://schema.org/identifier',
                                       'http://poderopedia.com/vocab/hasURL'}
@@ -335,7 +346,7 @@ class PPODEnv(Env):
                 print('action:', action)
                 print(new_query)
                 classes = set()
-        else:  # for entity; todo: consider more cases
+        else:
             if is_entity(action):
                 in_relations = self.cache.get_entity_in_relations(action)
                 out_relations = self.cache.get_entity_out_relations(action)

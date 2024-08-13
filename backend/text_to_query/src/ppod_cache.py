@@ -1,12 +1,12 @@
 import json
 from tqdm import tqdm
-from pangu.environment.examples.KB.PPODSparqlCache import PPODSparqlCache
+from pangu.environment.examples.KB.PPODSparqlService import PPODSparqlService
 
 if __name__ == '__main__':
     # read a list from a txt file
     entities = json.load(open('data/entities.json', 'r'))
 
-    sparql_cache = PPODSparqlCache()
+    sparql_cache = PPODSparqlService()
     for e in tqdm(entities):
         e = e.strip()
         in_relations = sparql_cache.get_entity_in_relations(e)

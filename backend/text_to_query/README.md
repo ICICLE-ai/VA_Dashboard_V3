@@ -12,26 +12,16 @@ For this project, Pangu is deployed on the PPOD knowledge graph.
 
 ## Preparation
 
-- To test the text-to-query interface, the working dir is `text_to_query`:
-
-```shell
-cd backend/text_to_query
-```
-
-- See `backend/text_to_query/requirements.txt` to install required packages. Some [Sentence-Transformers](https://huggingface.co/sentence-transformers) checkpoints will be
+- See `backend/requirements.txt` to install required packages. Some [Sentence-Transformers](https://huggingface.co/sentence-transformers) checkpoints will be
   downloaded automatically when running this component.
 
 ```shell
+cd backend
 pip install -r requirements.txt
 ```
 
-- To run text-to-query, set the OpenAI API key in the environment variable.
-
-```shell
-export OPENAI_API_KEY=<YOUR_API_KEY>
-```
-
-- See `Virtuoso Deployment` section in this page to deploy a Virtuoso server for KG query service. If you already have an online service, you can skip this step.
+- See `Virtuoso Deployment` section in this page to deploy a Virtuoso server for KG query service. If you already have an online query service, you can skip this step.
+- See `Language Model Deployment` section in this page to deploy a local LLM service. If you already have an online LLM service, you can skip this step.
 - (Optional) This is required only if ColBERT is used for retrieval. ColBERT is not used by default, so this step is optional:
 
 ```shell
@@ -46,55 +36,100 @@ tar -zxvf colbertv2.0.tar.gz
 - SPARQL query interface:
 
 ```shell
-python pangu/environment/examples/KB/PPODSparqlCache.py
+python pangu/environment/examples/KB/PPODSparqlService.py
 ```
 
-- Text-to-query API demos are shown in `python pangu/ppod_api.py`
+- To test the text-to-query interface, the working dir is `text_to_query`. API demos are shown in `test/test_ppod_sparql.py`:
 
-```python
-if __name__ == "__main__":
-    pangu = PanguForPPOD(openai_api_key=os.getenv('OPENAI_API_KEY'), llm_name='gpt-4o')
-
-    # text-to-query API demo
-    res = pangu.text_to_query('What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?')
-    for item in res:
-        print(item)
-    print()
-
-    question = 'Which infrastructure intersects with San Dieguito Lagoon and involves striped mullet?'  # entity: San Dieguito Lagoon, literal: striped mullet
-    # entity retrieval API demo
-    entities = pangu.retrieve_entity(question, top_k=10)
-    for i, doc in enumerate(entities):
-        print(i, doc, pangu.label_to_entity[doc])
-    print()
-
-    # literal retrieval API demo
-    literals = pangu.retrieve_literal(question, top_k=10)
-    for i, doc in enumerate(literals):
-        print(i, doc)
-    print()
-
-    # relation retrieval API demo
-    relations = pangu.retrieve_relation(question, top_k=10)
-    for i, doc in enumerate(relations):
-        print(i, doc, pangu.label_to_predicate[doc])
-    print()
-
+```shell
+cd backend/text_to_query
+python test/test_ppod_sparql.py
 ```
 
 ## Virtuoso Deployment
 
-You may need to setup your own Virtuoso server to run a KG query service. Here are the steps:
+You can use a public service to visit the KG, otherwise you may need to setup your own Virtuoso server to run a KG query service. Here are the steps:
 
-1. Download virtuoso from [here](https://github.com/dki-lab/Freebase-Setup).
-2. Loading PPOD KG ttl file to Virtuoso using `isql`:
+The default **working dir** for this section is your Virtuoso root path.
+
+1. Download [virtuoso](https://github.com/dki-lab/Freebase-Setup).
+2. Create a dir under virtuoso root path for a KG, and put `backend/text_to_query/config/virtuoso.ini` under this dir:
+
+```shell
+cd <your_virtuoso_path>
+mkdir ppod_kg
+cp /this_project/backend/text_to_query/config/virtuoso.ini your_virtuoso_path/ppod_kg
+```
+
+3. Put PPOD KG ttl file under `your_data_path` and load it to Virtuoso using `isql`:
 
 ```
-ld_dir('data', 'PPOD_CA.ttl', 'sparql');
+/your_virtuoso_path/bin/isql 13002 dba dba
+ld_dir('your_virtuoso_path/ppod_kg', 'PPOD_CA.ttl', '');
 rdf_loader_run();
 ```
 
-3. Set the endpoint url in `pangu/environment/examples/KB/PPODSparqlCache.py`.
+Where `13002` is the `isql` port in `virtuoso.ini` file.
+
+4. Start the Virtuoso server:
+
+```shell
+python3 virtuoso.py start 3002 -d ppod_kg
+```
+
+5. (Optional) Set the endpoint url in `pangu/environment/examples/KB/PPODSparqlService.py` if you want to change the default port `3002` or use a public service.
+
+6. Stop the Virtuoso server when you finish:
+
+```shell
+python3 virtuoso.py stop 3002
+```
+
+## Language Model Deployment
+
+This component supports [llama.cpp](https://github.com/ggerganov/llama.cpp) to run local LLM service. Its repository provides a detailed guide on how to build and run the LLM
+service. Here are the steps:
+
+1. [Download and build llama.cpp](https://github.com/ggerganov/llama.cpp?tab=readme-ov-file#basic-usage). Note that when building, you may need to check
+   the [CUDA version](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md) rather
+   than [the default version without CUDA](https://github.com/ggerganov/llama.cpp/blob/master/docs/build.md#build-llamacpp-locally).
+2. Download [Llama model](https://huggingface.co/meta-llama) or any other LLM that [llama.cpp supports](https://github.com/ggerganov/llama.cpp?tab=readme-ov-file#description). One
+   way to download large models from HuggingFace is to use `huggingface-cli`:
+
+```shell
+pip install huggingface-hub
+huggingface-cli download meta-llama/Meta-Llama-3.1-8B-Instruct
+```
+
+3. [Convert the LLM into gguf format](https://github.com/ggerganov/llama.cpp?tab=readme-ov-file#prepare-and-quantize), e.g.,
+
+```shell
+cd <your_llama_cpp_path>
+python convert_hf_to_gguf.py <your_hf_model_path> --outtype <q8_0, fp16 or other type> --outfile <gguf_output_path>
+```
+
+If you use `huggingface-cli` to download the model, <your_hf_model_path> looks
+like `$HF_HOME//hub/models--meta-llama--Meta-Llama-3.1-70B-Instruct/snapshots/1d54af340dc8906a2d21146191a9c184c35e47bd`.
+
+4. Run llama.cpp server:
+
+```shell
+your_llama_cpp_path/llama-server -m <gguf_output_path> --port 8080 --n_gpu_layers 100 --thread 1 --all-logits
+```
+
+Approximation of GPU memory consumption:
+
+- Llama 3.1 8B FP16: single GPU, 40GB
+- Llama 3.1 70B Q8: at least 2x A100 / 4x A6000
+
+## Interface
+
+To test the text-to-query component, run the following command:
+
+```shell
+cd backend/text_to_query
+python test/test_ppod_sparql.py
+```
 
 ## Evaluation
 

@@ -5,7 +5,7 @@ from collections import defaultdict
 from typing import List, Dict, Set
 
 from pangu.environment.environment import Env
-from pangu.environment.examples.KB.PPODSparqlCache import execute_query
+from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql
 
 from pangu.language.domain_language import DomainLanguage
