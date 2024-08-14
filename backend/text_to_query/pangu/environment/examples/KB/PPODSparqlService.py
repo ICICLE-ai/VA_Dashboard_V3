@@ -16,7 +16,7 @@ with open(rdf_file_path, "r") as f:
 g.parse(data=ttl, format="ttl", publicID='http:/')
 
 
-def execute_query(query: str, endpoint='http://localhost:3002/sparql'):
+def execute_query(query: str, endpoint='https://jupyter002-second.pods.tacc.develop.tapis.io/sparql'):
     if endpoint == 'rdflib':
         return execute_query_with_rdflib(query)
     return execute_query_with_virtuoso(query, endpoint)
@@ -38,7 +38,7 @@ def execute_query_with_rdflib(query: str) -> List[str]:
         return list(result)
 
 
-def execute_query_with_virtuoso(query: str, endpoint='http://localhost:3002/sparql'):
+def execute_query_with_virtuoso(query: str, endpoint='https://jupyter002-second.pods.tacc.develop.tapis.io/sparql'):
     """
     Using SPARQLWrapper to execute the query
     :param query:
@@ -55,7 +55,7 @@ def execute_query_with_virtuoso(query: str, endpoint='http://localhost:3002/spar
         cur_row = []
         skip = False  # skip the results from openlinksw
         for key in result:
-            if result[key]["value"].startswith('http://www.openlinksw.com/'):
+            if result[key]["value"].startswith('http://www.openlinksw.com/') or result[key]["value"].startswith("http://localuriqaserver"):
                 skip = True
                 break
             cur_row.append(result[key]["value"])
@@ -159,7 +159,7 @@ class QueryAPI(PPODSparqlService):
 
 if __name__ == '__main__':
     sparql = 'SELECT ?s WHERE { ?s ?p ?o } LIMIT 300'
-    results = execute_query(sparql, 'http://localhost:3002/sparql')
+    results = execute_query(sparql)
     print(results)
     print(len(results))
 
