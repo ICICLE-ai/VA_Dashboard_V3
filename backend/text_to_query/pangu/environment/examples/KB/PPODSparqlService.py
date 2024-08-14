@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.absolute()) + '/../../../../../..')
+
 import json
 import os.path
 from typing import List

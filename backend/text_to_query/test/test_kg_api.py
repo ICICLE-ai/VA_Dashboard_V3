@@ -1,7 +1,12 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
+
 import argparse
 import os
 
-from pangu.ppod_api import PanguForPPOD
+from backend.text_to_query.pangu.ppod_api import PanguForPPOD
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -14,4 +19,3 @@ if __name__ == "__main__":
     res = pangu.text_to_query('What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?')
     for item in res:
         print(item)
-    print()

@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 
+sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
 from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_all_propositions, get_uuid_concept_maps, get_uuid_relation_maps, \
     get_uuid_instance_maps
 
-sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
 from backend.llama_service import LlamaCppWrapper
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
