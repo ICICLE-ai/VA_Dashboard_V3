@@ -48,18 +48,26 @@ const handleFileUpload = (event) => {
         const data = worksheet.slice(1).map(row => {
           const rowData = {};
           headers.forEach((header, index) => {
-            rowData[header] = row[index];
+            let cellValue = row[index];
+            // Check if the cellValue is a number and within the Excel date range
+            if (typeof cellValue === 'number' && cellValue > 25569) {
+              // Convert Excel date serial number to JavaScript date
+              const date = new Date((cellValue - 25569) * 86400 * 1000);
+              // Format the date as needed, e.g., YYYY/MM/DD
+              cellValue = date.toISOString().split('T')[0];
+            }
+            rowData[header] = cellValue;
           });
           return rowData;
         });
-        
+
         tempParsedData[sheetName] = { data, headers };
-        props.data.output = data
+        props.data.output = data;
       });
 
       parsedData.value = tempParsedData;
       initializeTabulator(parsedData.value);
-      console.log(parsedData.value)
+      console.log(parsedData.value);
     };
     reader.readAsBinaryString(file);
   }
