@@ -199,10 +199,10 @@ function clearFilter() {
     <Toolbar :data="data" :id="id" :type="type"></Toolbar>
     <Handle type="target" :position="Position.Left" />
     <Handle type="source" :position="Position.Right" />
-    
+
     <!-- File Input for Excel Upload -->
     <input type="file" @change="handleFileUpload" accept=".xlsx, .xls" style="margin-bottom: 20px;" />
-    
+
     <v-card
       :width="cardWidth"
       :height="cardHeight"
@@ -221,12 +221,15 @@ function clearFilter() {
             </v-tab>
           </v-tabs>
         </div>
-        <div ref="table"></div>
+        <div class="table-container">
+          <div ref="table"></div>
+        </div>
         <v-btn @click="getSelectedRows">Get Selected Rows</v-btn>
       </div>
     </v-card>
   </div>
 </template>
+
 
 <style>
   .filter-button-col {
@@ -236,5 +239,10 @@ function clearFilter() {
     min-width: 60px;
     max-width: 120px;
     text-align: center;
+  }
+  .table-container {
+    max-height: 400px; /* Adjust the height as needed */
+    overflow-y: auto;
+    overflow-x: auto;
   }
 </style>
