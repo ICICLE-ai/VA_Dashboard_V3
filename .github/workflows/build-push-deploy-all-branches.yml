@@ -1,0 +1,116 @@
+### Author: Christian Garcia (TACC)
+### Release-* methodology originally authored by Nathan Freeman (TACC) here:
+# 
+# Description. This Github action runs when there are new commits to `main`.
+# The action logs into Docker with the Github action environment secrets `DOCKERHUB_USERNAME`
+# and `DOCKERHUB_TOKEN`.
+# The action pulls the repo and builds both the frontend and backend images.
+# The action tags both images with dev, and {current date} tags for future reference.
+#   - A prod and latest tag should be added, just haven't yet, implementation can happen once there's a full release.
+# Once pushed, the second job begins.
+# The second job sends a restart request to the frontend and backend pods. Every restart results in a 
+# new docker image pull, so once the restart is complete, the pods will have the latest images.
+#
+# POD_ID_BACKEND, POD_ID_FRONTEND, and TAPIS_ICICLEAI_PROD_TOKEN are secrets in the `docker` environment as well.
+# Said secrets are found here, https://github.com/ICICLE-ai/VA_Dashboard_V3/settings/environments.
+# You can update the values, but can't view.
+#
+# NOVEMBER 29th:
+#   vars.DOCKERHUB_USERNAME: username for cgarcia
+#   secrets.DOCKERHUB_TOKEN: token for cgarcia
+#   secrets.TAPIS_ICICLEAI_PROD_TOKEN: token for cgarcia
+#   vars.POD_ID_BACKEND: v
+#   vars.POD_ID_FRONTEND: vaapifrontend
+#   vars.DEV_POD_ID_BACKEND: vaapibackenddev
+#   vars.DEV_POD_ID_FRONTNED: vaapifrontenddev
+
+name: Build, push, deploy images
+on:
+  push:
+    branches: [ main, dev, release-* ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    environment: buildenv
+    steps:
+      - name: Get tag name from branch. SED removes `release-`, replaces `main` with `latest`.
+        id: get_tag_name
+        shell: bash
+        run: echo "tag_name=$(echo ${GITHUB_REF#refs/heads/} | sed 's/main/latest/g' | sed 's/release-//g')" >> $GITHUB_OUTPUT
+
+      - name: Get current date # get the date of the build
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+      - uses: docker/build-push-action@v3
+        name: Build & push tagged Docker backend image
+        with:
+          context: frontend
+          push: true
+          tags: 
+            notchristiangarcia/va-v3-frontend:${{ steps.get_tag_name.outputs.tag_name }},
+            notchristiangarcia/va-v3-frontend:${{ steps.date.outputs.date }}
+      - uses: docker/build-push-action@v3
+        name: Build & push tagged Docker frontend image
+        with:
+          context: backend
+          push: true
+          tags: 
+            notchristiangarcia/va-v3-backend:${{ steps.get_tag_name.outputs.tag_name }},
+            notchristiangarcia/va-v3-backend:${{ steps.date.outputs.date }}
+
+  deploy-images-dev:
+    runs-on: ubuntu-latest
+    environment: buildenv
+    needs: [build-and-push-images]
+    if:
+      contains('refs/heads/dev', github.ref)
+    steps:
+    - name: Restart dev backend pod
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.DEV_POD_ID_BACKEND }}/restart'
+        method: 'GET'
+        customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLEAI_PROD_TOKEN }}"}'
+
+    - name: Restart dev frontend pod
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.DEV_POD_ID_FRONTEND }}/restart'
+        method: 'GET'
+        customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLEAI_PROD_TOKEN }}"}'
+  
+  deploy-images-prod:
+    runs-on: ubuntu-latest
+    environment: buildenv
+    needs: [build-and-push-images]
+    if:
+      contains('refs/heads/main', github.ref)
+    steps:
+    - name: Restart backend pod
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.POD_ID_BACKEND }}/restart'
+        method: 'GET'
+        customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLE_PROD_TOKEN }}"}'
+
+    - name: Restart frontend pod
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.POD_ID_FRONTEND }}/restart'
+        method: 'GET'
+        customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLE_PROD_TOKEN }}"}'
