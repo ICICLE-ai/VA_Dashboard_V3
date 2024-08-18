@@ -19,10 +19,10 @@
 #   vars.DOCKERHUB_USERNAME: username for cgarcia
 #   secrets.DOCKERHUB_TOKEN: token for cgarcia
 #   secrets.TAPIS_ICICLEAI_PROD_TOKEN: token for cgarcia
-#   vars.POD_ID_BACKEND: v
-#   vars.POD_ID_FRONTEND: vaapifrontend
-#   vars.DEV_POD_ID_BACKEND: vaapibackenddev
-#   vars.DEV_POD_ID_FRONTNED: vaapifrontenddev
+#   vars.POD_ID_BACKEND: vadash
+#   vars.POD_ID_FRONTEND: vadashback
+#   vars.DEV_POD_ID_BACKEND: vadashdev   ### no dev yet!
+#   vars.DEV_POD_ID_FRONTNED: vadashbackdev   ### no dev yet!
 
 name: Build, push, deploy images
 on:
