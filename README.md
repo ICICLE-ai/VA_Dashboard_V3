@@ -43,6 +43,18 @@ npm run dev
 7. Get an OpenAI API key to use the Knowledge Graph exploring features
 
 
+# Docker Development and Deployment
+This repo features a Makefile to enable easy containerized deployments. Running `make up` and `make down` is the expected developer routine. Or a convenient `make down up`.  The Makefile makes use of `docker compose` to deploy `docker-compose.yml`, which in turn runs the frontend Django and backend Vite of VA3 in Docker containers defined by `frontend/Dockerfile` and `backend/Dockerfile`. Both of these images are built in the Makefile.
+```
+$ make <arg>
+  build      Build front and backend images
+  up         Deploy service
+  down       Burndown service
+  vars       Lists vars
+```
+When deployed, with `make up`, there will be three docker containers, va3-backend:dev, va3-frontend:dev, redis.
+
+
 # Roadmap
 Side panel
 ![Sidepanel Screenshot](https://github.com/user-attachments/assets/be7d018d-b95d-4d6a-b300-5980f40fa295)

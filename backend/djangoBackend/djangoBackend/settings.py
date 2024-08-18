@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,14 +19,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
+
+#### Get all envs needed
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-x8h1lc-_pqzeopm)%!67q_wn#+!a2=3r2dpy&fv5#r52e-)n$m"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-x8h1lc-_pqzeopm)%!67q_wn#+!a2=3r2dpy&fv5#r52e-)n$m")
+# Hosts that django should allow to reach this server, receive hosts in format "host1,host2,host3"
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", [])
+ALLOWED_HOSTS = ALLOWED_HOSTS.split(",") if ALLOWED_HOSTS else []
+# Host for django to access redis server
+REDIS_HOST = os.environ.get("DJANGO_REDIS_HOST", "127.0.0.1")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -49,7 +54,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [(REDIS_HOST, 6379)],
         },
     },
 }

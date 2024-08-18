@@ -1,0 +1,35 @@
+version: "3.4"
+
+networks:
+    va3-network:
+        driver: bridge
+
+services:
+    va3-frontend:
+        image: va3-frontend:$TAG
+        ports:
+            - "5173:5173"
+        restart: always
+        #environment:   
+        networks:
+            - va3-network
+        #command: ["nginx", "-g", "daemon off;"]
+
+    va3-backend:
+        image: va3-backend:$TAG
+        ports:
+            - "8000:8000"
+        environment:
+            DJANGO_SECRET_KEY: "django-insecure-x8h1lc-_pqzeopm)%!67q_wn#+!a2=3r2dpy&fv5#r52e-)n$m"
+            #DJANGO_ALLOWED_HOSTS: "*"
+            DJANGO_REDIS_HOST: "localhost"
+        restart: on-failure
+        networks:
+            - va3-network
+
+    va3-redis:
+        image: redis:7.0
+        ports:
+            - "6379:6379"
+        networks:
+            - va3-network
