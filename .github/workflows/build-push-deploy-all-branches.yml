@@ -33,7 +33,7 @@ on:
 jobs:
   build-and-push-images:
     runs-on: ubuntu-latest
-    environment: buildenv
+    environment: docker
     steps:
       - name: Get tag name from branch. SED removes `release-`, replaces `main` with `latest`.
         id: get_tag_name
@@ -75,7 +75,7 @@ jobs:
 
   deploy-images-dev:
     runs-on: ubuntu-latest
-    environment: buildenv
+    environment: docker
     needs: [build-and-push-images]
     if:
       contains('refs/heads/dev', github.ref)
@@ -96,7 +96,7 @@ jobs:
   
   deploy-images-prod:
     runs-on: ubuntu-latest
-    environment: buildenv
+    environment: docker
     needs: [build-and-push-images]
     if:
       contains('refs/heads/main', github.ref)
