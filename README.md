@@ -31,7 +31,7 @@ git clone https://github.com/ICICLE-ai/VA_Dashboard_V3.git
 3. Install dependencies  <br/>
 npm install
 
-4. From any location in the device run the redis server  <br/>
+4. From the project root folder run the redis server  <br/>
 redis-server
 
 5. To run the backend go into the djangoBackend folder within the backend folder  <br/>
