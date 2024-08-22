@@ -17,10 +17,10 @@
       <div class="card-body">
         <div ref="subgraph" class="graph"></div>
       </div>
-      <div class="input-group mt-6">
+      <!-- <div class="input-group mt-6">
         <textarea v-model="nodeId" placeholder="Enter Node ID" class="form-control"></textarea>
         <button @click="displaySubgraph" class="btn btn-primary">Display Node</button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -47,7 +47,7 @@ watch(() => props.data.input, (newData, oldData) => {
   if (newData && newData !== oldData) {
     console.log('New data received:', newData);
     graphData.value = {
-      nodes: newData,
+      nodes: newData.map(node => ({ ...node, isInitial: true })), // Add isInitial property
       edges: []
     };
     console.log('Graph data after initialization:', graphData.value);
@@ -114,7 +114,7 @@ function drawGraph(data, container) {
 
   nodeGroup.append("circle")
     .attr("r", 40)
-    .attr("fill", "#69b3a2")
+    .attr("fill", d => d.isInitial ? "#69b3a2" : "#ff7f50") // Different colors for initial and extended nodes
     .on("mouseover", showNodeInfo)
     .on("mouseout", hideNodeInfo)
     .on("click", showPieChart);
@@ -150,7 +150,14 @@ function drawGraph(data, container) {
       .attr("x", d => (d.source.x + d.target.x) / 2)
       .attr("y", d => (d.source.y + d.target.y) / 2);
 
-    nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
+      nodeGroup.attr("transform", d => {
+    // Set the bounds (adjust these values if needed)
+    const r = 40;  // Radius of the node
+    const padding = 5; // Extra space around the SVG edges
+    d.x = Math.max(r + padding, Math.min(width - r - padding, d.x));
+    d.y = Math.max(r + padding, Math.min(height - r - padding, d.y));
+    return `translate(${d.x},${d.y})`;
+  });
   });
   
   
@@ -333,74 +340,76 @@ const drawSingleNode = (nodeId, container) => {
 };
 
 const handlePieClick = async (pieData, element) => {
-  const toyData = [
-    { Resource_start: "FMMP Important Farmland Maps", Resource_end: "Wildlife Movement Barrier Priorities", table_name: "in_dataset" },
-    { Resource_start: "FMMP Important Farmland Maps", Resource_end: "Land Use Change Probability - 2100", table_name: "test_link" },
-    { Resource_start: "Wildlife Movement Barrier Priorities", Resource_end: "C-CAP Regional Land Cover and Change", table_name: "for_testing" }
-  ];
-
   console.log('Clicked pie section:', pieData);
   console.log('nodeId.value:', nodeId.value);
   const currentNodeLabel = nodeId.value;
   console.log('currentNodeLabel:', currentNodeLabel);
 
   if (pieData.data.label === 'Action 3') {
-    const connectedNodes = toyData.filter(row => row.Resource_start === currentNodeLabel);
+    try {
+      // Fetch JSON data from the server
+      const response = await fetch('/ppod_table.json'); // Adjust the path as needed
+      const jsonData = await response.json();
 
-    if (connectedNodes.length > 0) {
-      const newEdges = connectedNodes.map(row => ({
-        source: graphData.value.nodes.find(n => n.label === row.Resource_start).id,
-        target: row.Resource_end,
-        label: row.table_name
-      }));
-
-      // Ensure graphData.value has the correct structure
-      if (!graphData.value.edges) {
-        graphData.value.edges = [];
-      }
-
-      // Add new edges
-      graphData.value.edges = [...graphData.value.edges, ...newEdges];
-
-      // Ensure all nodes exist
-      const allNodeIds = new Set([
-        ...graphData.value.nodes.map(n => n.id),
-        ...newEdges.map(e => e.target)
-      ]);
-
-      graphData.value.nodes = Array.from(allNodeIds).map(id => {
-        const existingNode = graphData.value.nodes.find(n => n.id === id);
-        return existingNode || { id, label: id };
+      // Collect connections from all tables
+      const connectedNodes = [];
+      jsonData.forEach(table => {
+        if (table.table_data) {
+          const tableConnections = table.table_data.filter(row => row.Resource_start === currentNodeLabel);
+          connectedNodes.push(...tableConnections);
+        }
       });
 
-      console.log('Nodes after update:', graphData.value.nodes);
-      console.log('Edges after update:', graphData.value.edges);
+      if (connectedNodes.length > 0) {
+        const newEdges = connectedNodes.map(row => {
+          // Find the source node by label
+          const sourceNode = graphData.value.nodes.find(n => n.label === row.Resource_start);
 
-      // Draw the updated graph
-      drawGraph(graphData.value, subgraph.value);
-    } else {
-      console.log('No connections found for the current node:', currentNodeLabel);
-    }
-  
-  
-  } else if (pieData.data.label === 'Action 1') {
-    console.log('Clicked action:', pieData.data.label);
-    if (currentNodeLabel) {
-      const nodeIdToRemove = findNodeIdByLabel(currentNodeLabel);
-      console.log('Node ID to remove:', nodeIdToRemove);
-      if (nodeIdToRemove) {
-        const subgraphData = graphData.value.filter(node => node.id !== nodeIdToRemove);
-        drawGraph(subgraphData, subgraph.value);
+          return {
+            source: sourceNode ? sourceNode.id : null,
+            target: row.Resource_end,
+            label: jsonData.find(table => table.table_data.includes(row)).table_name // Set the label to the table_name
+          };
+        }).filter(edge => edge.source !== null && edge.target !== null); // Filter out invalid edges
+
+        // Ensure graphData.value has the correct structure
+        if (!graphData.value.edges) {
+          graphData.value.edges = [];
+        }
+
+        // Add new edges
+        graphData.value.edges = [...graphData.value.edges, ...newEdges];
+
+        // Ensure all nodes exist
+        const allNodeIds = new Set([
+          ...graphData.value.nodes.map(n => n.id),
+          ...newEdges.map(e => e.target)
+        ]);
+
+        graphData.value.nodes = Array.from(allNodeIds).map(id => {
+          const existingNode = graphData.value.nodes.find(n => n.id === id);
+          return existingNode || { id, label: id }; // Ensure every node has a valid label
+        });
+
+        console.log('Nodes after update:', graphData.value.nodes);
+        console.log('Edges after update:', graphData.value.edges);
+
+        // Draw the updated graph
+        drawGraph(graphData.value, subgraph.value);
       } else {
-        console.log(`Node with label '${currentNodeLabel}' not found.`);
+        console.log('No connections found for the current node:', currentNodeLabel);
       }
-    } else {
-      console.log('No node selected.');
+    } catch (error) {
+      console.error('Error fetching or parsing JSON file:', error);
     }
+  } else if (pieData.data.label === 'Action 1') {
+    // ... (rest of the Action 1 code remains the same)
   } else {
     console.log('No action for this pie section.');
   }
 };
+
+
 
 
 

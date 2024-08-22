@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 
 const { cardWidth, cardHeight, resizeEndFunc } = initialize(props.data['width'], props.data['height']);
 
+
 const props = defineProps({
   data: {
     type: Object,
@@ -84,7 +85,7 @@ const initializeTabulator = (parsedDataValue) => {
       selectable: true,
       rowSelection: "checkbox",
       reactiveData: true,
-      columns: parsedDataValue[firstSheet].headers.map(header => ({ title: header, field: header })),
+      columns: parsedDataValue[firstSheet].headers.map(header => ({ title: header, field: header, width: 150 })),
       data: parsedDataValue[firstSheet].data,
       rowSelected: (row) => {
         console.log('Row Selected:', row.getData());
@@ -149,15 +150,32 @@ watch(selectedRows, (newSelectedRows) => {
 watch(() => props['data']['input'], (newData) => {
   if (Array.isArray(newData) && newData.length > 0 && typeof newData[0] === 'object') {
     const temp = toRaw(newData);
-    const columns = Object.keys(temp[0]).map(column => ({ title: column, field: column }));
+    
+    // Transform data to a format Tabulator can understand
+    const transformedData = temp.map(item => ({
+      Concept: item['Concept.value']  // Assuming 'Concept.value' is the key for the value
+    }));
+    
+    // Define columns based on transformed data
+    const columns = Object.keys(transformedData[0]).map(column => ({ title: column, field: column }));
+    
+    console.log("Transformed Data:", transformedData);
+    
     if (tabulator.value) {
       tabulator.value.setColumns(columns);
-      tabulator.value.setData(temp).then(() => {
+      tabulator.value.setData(transformedData).then(() => {
         console.log('Data updated');
       }).catch(error => {
         console.error('Error updating data:', error);
       });
+    } else {
+      tabulator.value = new Tabulator(table.value, {
+        columns: columns,
+        data: transformedData,
+        reactiveData: true,
+      });
     }
+
     props['data']['output'] = newData;
   } else {
     if (tabulator.value) {
@@ -165,12 +183,14 @@ watch(() => props['data']['input'], (newData) => {
       tabulator.value.redraw(true);
     } else {
       tabulator.value = new Tabulator(table.value, {
+        columns: [],  // Set initial empty columns
         data: [],
         reactiveData: true,
       });
     }
   }
 }, { deep: true });
+
 
 const sortField = ref('Name');
 const sortDirection = ref('Asc');
@@ -195,7 +215,7 @@ function clearFilter() {
 
 <template>
   <div>
-    <NodeResizer @resize="resizeEndFunc" min-width="100" min-height="30" color="white"/>
+    <NodeResizer @resize="resizeEndFunc" min-width="100" min-height="50" color="white"/>
     <Toolbar :data="data" :id="id" :type="type"></Toolbar>
     <Handle type="target" :position="Position.Left" />
     <Handle type="source" :position="Position.Right" />
@@ -204,8 +224,8 @@ function clearFilter() {
     <input type="file" @change="handleFileUpload" accept=".xlsx, .xls" style="margin-bottom: 20px;" />
 
     <v-card
-      :width="cardWidth"
-      :height="cardHeight"
+      :width=1000
+      :height=1000
       variant="outlined"
       :title="'Table Viewer'"
       :style="{ backgroundColor: data.style['background'],
@@ -241,7 +261,8 @@ function clearFilter() {
     text-align: center;
   }
   .table-container {
-    max-height: 400px; /* Adjust the height as needed */
+    max-height: 800px; /* Adjust the height as needed */
+    width: 100%;
     overflow-y: auto;
     overflow-x: auto;
   }
