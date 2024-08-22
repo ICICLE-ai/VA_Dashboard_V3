@@ -148,48 +148,88 @@ watch(selectedRows, (newSelectedRows) => {
 }, { deep: true });
 
 watch(() => props['data']['input'], (newData) => {
-  if (Array.isArray(newData) && newData.length > 0 && typeof newData[0] === 'object') {
-    const temp = toRaw(newData);
+  if (Array.isArray(newData) && newData.length > 0) {
+    // Handle the new format: Objects with 'Concept.value' key
+    if (typeof newData[0] === 'object' && newData[0].hasOwnProperty('Concept.value')) {
+      const temp = toRaw(newData);
     
-    // Transform data to a format Tabulator can understand
-    const transformedData = temp.map(item => ({
-      Concept: item['Concept.value']  // Assuming 'Concept.value' is the key for the value
-    }));
+      // Transform data to a format Tabulator can understand
+      const transformedData = temp.map(item => ({
+        Concept: item['Concept.value']  // Assuming 'Concept.value' is the key for the value
+      }));
     
-    // Define columns based on transformed data
-    const columns = Object.keys(transformedData[0]).map(column => ({ title: column, field: column }));
+      // Define columns based on transformed data
+      const columns = Object.keys(transformedData[0]).map(column => ({ title: column, field: column }));
     
-    console.log("Transformed Data:", transformedData);
+      console.log("Transformed Data:", transformedData);
     
-    if (tabulator.value) {
-      tabulator.value.setColumns(columns);
-      tabulator.value.setData(transformedData).then(() => {
-        console.log('Data updated');
-      }).catch(error => {
-        console.error('Error updating data:', error);
-      });
-    } else {
-      tabulator.value = new Tabulator(table.value, {
-        columns: columns,
-        data: transformedData,
-        reactiveData: true,
-      });
-    }
+      if (tabulator.value) {
+        tabulator.value.setColumns(columns);
+        tabulator.value.setData(transformedData).then(() => {
+          console.log('Data updated');
+        }).catch(error => {
+          console.error('Error updating data:', error);
+        });
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: columns,
+          data: transformedData,
+          reactiveData: true,
+        });
+      }
 
-    props['data']['output'] = newData;
+      props['data']['output'] = newData;
+    } 
+    // Handle the original format: Objects with multiple keys
+    else if (typeof newData[0] === 'object' && Object.keys(newData[0]).length > 0) {
+      const temp = toRaw(newData);
+      const columns = Object.keys(temp[0]).map(column => ({ title: column, field: column }));
+      
+      if (tabulator.value) {
+        tabulator.value.setColumns(columns);
+        tabulator.value.setData(temp).then(() => {
+          console.log('Data updated');
+        }).catch(error => {
+          console.error('Error updating data:', error);
+        });
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: columns,
+          data: temp,
+          reactiveData: true,
+        });
+      }
+
+      props['data']['output'] = newData;
+      console.log("newdata", newData);
+    } else {
+      // If data format is not recognized, clear the table
+      if (tabulator.value) {
+        tabulator.value.setData([]);
+        tabulator.value.redraw(true);
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: [],
+          data: [],
+          reactiveData: true,
+        });
+      }
+    }
   } else {
+    // If newData is not an array or is an empty array, clear the table
     if (tabulator.value) {
       tabulator.value.setData([]);
       tabulator.value.redraw(true);
     } else {
       tabulator.value = new Tabulator(table.value, {
-        columns: [],  // Set initial empty columns
+        columns: [],
         data: [],
         reactiveData: true,
       });
     }
   }
 }, { deep: true });
+
 
 
 const sortField = ref('Name');
