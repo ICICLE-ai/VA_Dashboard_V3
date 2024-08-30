@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "test:unit": "vitest"
@@ -39,7 +39,8 @@
     "vue-prism-editor": "^2.0.0-alpha.1",
     "vue-vega": "^1.0.0-alpha.13",
     "vuedraggable": "^2.24.3",
-    "vuetify": "^3.3.6"
+    "vuetify": "^3.3.6",
+    "xlsx": "^0.18.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",

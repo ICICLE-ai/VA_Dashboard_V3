@@ -31,7 +31,7 @@ git clone https://github.com/ICICLE-ai/VA_Dashboard_V3.git
 3. Install dependencies  <br/>
 npm install
 
-4. From any location in the device run the redis server  <br/>
+4. From the project root folder run the redis server  <br/>
 redis-server
 
 5. To run the backend go into the djangoBackend folder within the backend folder  <br/>
@@ -41,6 +41,18 @@ uvicorn djangoBackend.asgi:application --port 8000 --reload
 npm run dev
 
 7. Get an OpenAI API key to use the Knowledge Graph exploring features
+
+
+# Docker Development and Deployment
+This repo features a Makefile to enable easy containerized deployments. Running `make up` and `make down` is the expected developer routine. Or a convenient `make down up`.  The Makefile makes use of `docker compose` to deploy `docker-compose.yml`, which in turn runs the frontend Django and backend Vite of VA3 in Docker containers defined by `frontend/Dockerfile` and `backend/Dockerfile`. Both of these images are built in the Makefile.
+```
+$ make <arg>
+  build      Build front and backend images
+  up         Deploy service
+  down       Burndown service
+  vars       Lists vars
+```
+When deployed, with `make up`, there will be three docker containers, va3-backend:dev, va3-frontend:dev, redis.
 
 
 # Roadmap
