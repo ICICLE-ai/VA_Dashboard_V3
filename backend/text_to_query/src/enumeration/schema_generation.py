@@ -2,7 +2,7 @@ import sys
 
 sys.path.append('src')
 sys.path.append('.')
-from pangu.ppod_agent import lisp_to_label
+from pangu.ppod_agent import lisp_to_label, ppod_entity_label, ppod_relation_label
 
 import copy
 import json
@@ -39,8 +39,8 @@ def replace_inv_relations(lisp: str, inv_label: dict):
     return lisp
 
 
-def lisp_to_repr(lisp, prefixes, inv_label):
-    lisp = lisp_to_label(lisp)
+def lisp_to_repr(lisp, prefixes, inv_label, entity_to_label, relation_to_label):
+    lisp = lisp_to_label(lisp, entity_to_label, relation_to_label)
     if prefixes:
         lisp = simplify_with_prefixes(lisp, prefixes)
     if inv_label:
@@ -329,7 +329,7 @@ if __name__ == '__main__':
     prefixes = json.load(open('data/prefix.json', 'r'))
     for sample in results:
         sample['s-expression_simplified'] = simplify_with_prefixes(sample['s-expression'], prefixes)
-        sample['s-expression_str'] = lisp_to_label(sample['s-expression_simplified'])
+        sample['s-expression_str'] = lisp_to_label(sample['s-expression_simplified'], ppod_entity_label, ppod_relation_label)
     output_path = 'exp/sample_queries.json'
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=4)

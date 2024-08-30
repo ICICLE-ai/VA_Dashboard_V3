@@ -5,7 +5,7 @@ import requests
 import logging
 
 from backend.milkOligoDB.config.settings import API_URL_CREATE_CONCEPT, API_URL_CREATE_INSTANCE, API_URL_CREATE_RELATION, ICFOODS_API_URL_GET_CONCEPT, \
-    ICFOODS_PROPOSITIONS_SEARCH_URL, ICFOODS_API_URL_GET_RELATION, ICFOODS_API_URL_GET_INSTANCE, ICFOODS_API_URL_GET_PROPOSITION
+    ICFOODS_PROPOSITIONS_SEARCH_URL, ICFOODS_API_URL_GET_RELATION, ICFOODS_API_URL_GET_INSTANCE, ICFOODS_API_URL_GET_PROPOSITION, ICFOODS_API_HOST
 
 
 def create_concept(concept_name: str, iri: str = None) -> str:
@@ -207,12 +207,35 @@ def get_uuid_instance_maps(all_instances: List):
     return uuid_to_instance_map, instance_to_uuid_map
 
 
+def get_concept_by_label(label: str):
+    url = f"{ICFOODS_API_HOST}/instance/lookup/{label}/"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logging.error(f"Failed to fetch concept by label: {e}")
+        return None
+
+
+def get_instance_by_label(label: str):
+    url = f"{ICFOODS_API_HOST}/instance/lookup/{label}/"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logging.error(f"Failed to fetch instance by label: {e}")
+        return None
+
+
 def get_adjacent_relations_by_subject(uuid: str):
     url = f"{ICFOODS_PROPOSITIONS_SEARCH_URL}/subject/{uuid}"
     try:
         response = requests.get(url)
         response.raise_for_status()
-        return response.json()
+        response_json = response.json()
+        return list(set([item['predicate'] for item in response_json]))
     except requests.RequestException as e:
         logging.error(f"Failed to fetch adjacent relations by subject: {e}")
         return None
@@ -223,7 +246,8 @@ def get_adjacent_relations_by_object(uuid: str):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        return response.json()
+        response_json = response.json()
+        return list(set([item['predicate'] for item in response_json]))
     except requests.RequestException as e:
         logging.error(f"Failed to fetch adjacent relations by object: {e}")
         return None
@@ -273,16 +297,21 @@ if __name__ == '__main__':
     print('len uuid_to_instance_map:', len(uuid_to_instance_map))
     print('len instance_to_uuid_map:', len(instance_to_uuid_map))
 
-    triples = get_adjacent_relations_by_subject(list(uuid_to_instance_map.keys())[0])
-    if len(triples):
-        print(triples)
-        object = get_object_by_subject_and_relation(list(uuid_to_instance_map.keys())[0], triples[0].get('predicate'))
-        print(object)
+    print(get_concept_by_label('CWHRHabitatType'))
+    print(get_instance_by_label('Tejon Ranch Company'))
 
-    triples = get_adjacent_relations_by_object(list(uuid_to_instance_map.keys())[0])
-    if len(triples):
-        print(triples)
-        subject = get_subject_by_object_and_relation(list(uuid_to_instance_map.keys())[0], triples[0].get('predicate'))
-        print(subject)
+    for i in range(0, 5):
+        relations = get_adjacent_relations_by_subject(list(uuid_to_instance_map.keys())[i])
+        if len(relations):
+            print(i, relations)
+            object = get_object_by_subject_and_relation(list(uuid_to_instance_map.keys())[i], relations[0])
+            print(i, object)
+
+    for i in range(0, 20):
+        relations = get_adjacent_relations_by_object(list(uuid_to_instance_map.keys())[i])
+        if len(relations):
+            print(i, relations)
+            subject = get_subject_by_object_and_relation(list(uuid_to_instance_map.keys())[i], relations[0])
+            print(i, subject)
 
     print('Test done')

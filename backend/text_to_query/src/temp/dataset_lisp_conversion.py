@@ -4,7 +4,7 @@ import json
 from enumeration.schema_generation import simplify_with_prefixes
 from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import replace_r_func_to_inv, lisp_to_sparql
-from pangu.ppod_agent import lisp_to_label
+from pangu.ppod_agent import lisp_to_label, ppod_entity_label, ppod_relation_label
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     for sample in data:
         sample['s-expression'] = replace_r_func_to_inv(sample['s-expression'])
         sample['s-expression_simplified'] = simplify_with_prefixes(sample['s-expression'], prefixes)
-        sample['s-expression_str'] = simplify_with_prefixes(lisp_to_label(sample['s-expression']), prefixes)
+        sample['s-expression_str'] = simplify_with_prefixes(lisp_to_label(sample['s-expression'], ppod_entity_label, ppod_relation_label), prefixes)
 
         sparql = lisp_to_sparql(sample['s-expression'])
         rows = execute_query(sample['sparql'])

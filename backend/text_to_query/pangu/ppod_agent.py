@@ -25,7 +25,7 @@ with open(os.path.join(proj_root, "data/predicate_to_label.json")) as f:
     ppod_relation_label = json.load(f)
 
 
-def lisp_to_label(lisp: str):
+def lisp_to_label(lisp: str, entity_to_label, relation_to_label):
     lisp_split = lisp.split(' ')
     res = []
     for item in lisp_split:
@@ -38,10 +38,10 @@ def lisp_to_label(lisp: str):
             inv = True
             item = item.replace('_inv', '')
 
-        if item in ppod_entity_label:
-            res.append('[' + ppod_entity_label[item] + ']')
-        elif item in ppod_relation_label:
-            res.append('[' + ppod_relation_label[item] + ']')
+        if item in entity_to_label:
+            res.append('[' + entity_to_label[item] + ']')
+        elif item in relation_to_label:
+            res.append('[' + relation_to_label[item] + ']')
         else:
             res.append(item)
 
@@ -266,7 +266,7 @@ if __name__ == '__main__':
         for rtn_type in new_plans:
             print('Step', step, rtn_type)
             for plan in new_plans[rtn_type]:
-                print({'plan': plan, 'plan_str': lisp_to_label(plan.plan)})
+                print({'plan': plan, 'plan_str': lisp_to_label(plan.plan, ppod_entity_label, ppod_relation_label)})
             print()
         agent.update_current_plans(new_plans)
         step += 1

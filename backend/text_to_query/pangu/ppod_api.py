@@ -2,10 +2,9 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
-from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_all_propositions, get_uuid_concept_maps, get_uuid_relation_maps, \
-    get_uuid_instance_maps
+from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_uuid_concept_maps, get_uuid_relation_maps, get_uuid_instance_maps
 
-from backend.llama_service import LlamaCppWrapper
+from backend.llama_service import LlamaCppWrapper, OllamaWrapper
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
 import os.path
@@ -87,7 +86,7 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
 
     prompt_value = chat_prompt.format_prompt(question=question, format_candidates=format_candidates(plans))
 
-    if isinstance(llm, ChatOpenAI) or isinstance(llm, LlamaCppWrapper):
+    if isinstance(llm, ChatOpenAI) or isinstance(llm, LlamaCppWrapper) or isinstance(llm, OllamaWrapper):
         completion = llm.invoke(prompt_value.to_messages(), max_tokens=1, seed=1, logprobs=True, top_logprobs=20, temperature=0.5,
                                 logit_bias={token_id: 99 for token_id in range(64, 64 + 26)})
         top_logprobs = completion.response_metadata['logprobs']['content'][0]['top_logprobs']
@@ -105,12 +104,13 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
 
 
 class PanguForPPOD:
-    def __init__(self, proj_root: str = None, openai_api_key: str = None, llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
+    def __init__(self, proj_root: str = None, api_key: str = None, llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
         if proj_root is None:
             proj_root = str(Path(__file__).parent.absolute()) + '/..'
-        if openai_api_key is not None:
-            assert openai_api_key.startswith("sk-")
-            os.environ['OPENAI_API_KEY'] = openai_api_key
+        if api_key is not None:
+            if llm_name.startswith('gpt-'):
+                assert api_key.startswith("sk-")
+                os.environ['OPENAI_API_KEY'] = api_key
 
         if use_kg_api:
             all_concepts = get_all_concepts()
@@ -182,8 +182,10 @@ class PanguForPPOD:
         assert self.llm_name is not None, 'Please set LLM model name or model path'
         if self.llm_name.startswith('gpt-'):
             self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60)
-        elif 'llama' in self.llm_name.lower():
-            self.llm = LlamaCppWrapper(model_path=self.llm_name)
+        elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
+            self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
+        # elif 'llama' in self.llm_name.lower():
+        # self.llm = LlamaCppWrapper(model_path=self.llm_name)
 
         print('Text-to-query initialized')
 
@@ -234,7 +236,7 @@ class PanguForPPOD:
             for rtn_type in new_plans:
                 # convert plan to plan_str
                 for p in new_plans[rtn_type]:
-                    p.plan_str = lisp_to_repr(p.plan, self.prefixes, self.inv_label)
+                    p.plan_str = lisp_to_repr(p.plan, self.prefixes, self.inv_label, self.entity_to_label, self.predicate_to_label)
                 cur_plans.extend(new_plans[rtn_type])
             # recall using SentenceTransformerRetriever
             plan_ranker = SentenceTransformerRetriever([p.plan_str for p in cur_plans], model=self.retrieval_model)

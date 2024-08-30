@@ -281,11 +281,18 @@ class PPODEnv(Env):
         self.relations_inv = set([r + '_inv' for r in self.relations])
         self.classes = classes
 
-        if relations_to_entity is None:
-            self.properties = self.relations.union(self.relations_inv)
+        if not use_kg_api:
+            if relations_to_entity is None:
+                self.properties = self.relations.union(self.relations_inv)
+            else:
+                p_inv = set([r + '_inv' for r in relations_to_entity])
+                self.properties = relations_to_entity.union(p_inv)
         else:
-            p_inv = set([r + '_inv' for r in relations_to_entity])
-            self.properties = relations_to_entity.union(p_inv)
+            from backend.milkOligoDB.src.api_client import get_all_relations
+            all_relations = get_all_relations()
+            relation_uuids = list(set([r['uuid'] for r in all_relations]))
+            inverse_relation_uuids = list(set([r['uuid'] + '_inv' for r in all_relations]))
+            self.properties = set(relation_uuids + inverse_relation_uuids)
 
         self.literal_properties = set()
         if relations_to_literal is not None:
