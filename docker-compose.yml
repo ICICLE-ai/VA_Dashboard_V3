@@ -10,7 +10,8 @@ services:
         ports:
             - "5173:5173"
         restart: always
-        #environment:   
+        environment:   
+            VITE_APP_BACKEND_BASE_URL: "http://127.0.0.1:8000"
         networks:
             - va3-network
         #command: ["nginx", "-g", "daemon off;"]
