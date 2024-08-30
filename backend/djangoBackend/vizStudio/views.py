@@ -253,3 +253,11 @@ def wake_and_asr(request):
     start_wake_detection(request)
     results = transcribe_audio(request)
     return results
+
+@require_http_methods(["GET"])
+def healthcheck(request):
+    """
+    Simple healthcheck
+    :param request: The request object
+    """
+    return JsonResponse({200: "Healthy"})
