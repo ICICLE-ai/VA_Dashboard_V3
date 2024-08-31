@@ -1,6 +1,6 @@
-import json
 import re
 
+from backend.milkOligoDB.src.api_client import get_subject_by_object_and_relation, get_adjacent_relations_by_subject, get_adjacent_relations_by_object
 from pangu.environment.environment import Env
 from pangu.environment.examples.KB.PPODSparqlService import PPODSparqlService, QueryAPI
 from pangu.language.util import lisp_to_nested_expression, linearize_lisp_expression
@@ -261,6 +261,63 @@ def lisp_to_sparql(lisp: str) -> str:
     return '\n'.join(clauses)
 
 
+def execute_lisp_by_kg_api(lisp: str):
+    from backend.milkOligoDB.src.api_client import get_object_by_subject_and_relation
+
+    lisp = lisp.strip()
+
+    if lisp.startswith('(') and lisp.endswith(')'):
+        lisp = lisp[1:-1].strip()
+
+    parts = []
+    i = 0
+    while i < len(lisp):
+        if lisp[i] == '(':
+            count = 1
+            start = i
+            i += 1
+            while i < len(lisp) and count > 0:
+                if lisp[i] == '(':
+                    count += 1
+                elif lisp[i] == ')':
+                    count -= 1
+                i += 1
+            parts.append(lisp[start:i])
+        else:
+            j = i
+            while i < len(lisp) and lisp[i] != ' ':
+                i += 1
+            parts.append(lisp[j:i])
+        i += 1
+
+    func_name = parts[0].upper()
+    if func_name == "JOIN":
+        if parts[1].endswith("_inv"):
+            subject = execute_lisp_by_kg_api(parts[2])
+            relation = parts[1][:-4]
+            results = set()
+            for sub in subject:
+                objects = get_object_by_subject_and_relation(sub, relation)
+                results.update([r['object'] for r in objects])
+            return results
+        else:
+            object = execute_lisp_by_kg_api(parts[2])
+            relation = parts[1]
+            results = set()
+            for obj in object:
+                subjects = get_subject_by_object_and_relation(obj, relation)
+                results.update([r['subject'] for r in subjects])
+            return results
+    elif func_name == "COUNT":
+        return len(execute_lisp_by_kg_api(parts[1]))
+    elif func_name == "AND":
+        arg1 = execute_lisp_by_kg_api(parts[1])
+        arg2 = execute_lisp_by_kg_api(parts[2])
+        return list(set(arg1).intersection(set(arg2)))
+    else:
+        return [lisp]
+
+
 class PPODEnv(Env):
     def __init__(self, relations: set, classes: set, relations_to_entity=None, relations_to_literal=None, use_kg_api=False):
         """
@@ -273,6 +330,7 @@ class PPODEnv(Env):
         super().__init__()
         if use_kg_api:
             self.cache = QueryAPI()
+            self.use_kg_api = True
         else:
             self.cache = PPODSparqlService()
         self.relations = relations - {'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#label',
@@ -305,54 +363,10 @@ class PPODEnv(Env):
         :return: admissible classes and relations from this subprogram
         """
         if action[0] == '(' and action[-1] == ')':  # for subprogram
-            sparql_query = lisp_to_sparql(action)
-            clauses = sparql_query.split("\n")
-
-            # query relations
-            relations = set()  # in and out relations
-            new_clauses = ["SELECT DISTINCT ?rel\nWHERE {\n?sub ?rel ?x .\n{"]
-            new_clauses.extend(clauses)
-            new_clauses.append("}\n}")
-            new_query = '\n'.join(new_clauses)
-            try:
-                rows = self.execute_SPARQL(new_query)
-            except Exception as e:
-                print('in_relation query exception:', e)
-                print('action:', action)
-                print(new_query)
+            if self.use_kg_api:
+                classes, relations = self.step_by_kg_api(action)
             else:
-                in_relations = [r[0] for r in rows]
-                relations = set(in_relations)
-
-            # query inverse relations
-            new_clauses = ["SELECT DISTINCT ?rel\nWHERE {\n?x ?rel ?obj .\n{"]
-            new_clauses.extend(clauses)
-            new_clauses.append("}\n}")
-            new_query = '\n'.join(new_clauses)
-            try:
-                rows = self.execute_SPARQL(new_query)
-            except Exception as e:
-                print('out_relation query exception:', e)
-                print('action:', action)
-                print(new_query)
-            else:
-                out_relations = [r[0] for r in rows]
-                out_relations = [r + '_inv' for r in out_relations]
-                relations = relations.union(set(out_relations))
-
-            # query classes
-            new_clauses = ["SELECT DISTINCT ?cls\nWHERE {\n?x a ?cls .\n{"]
-            new_clauses.extend(clauses)
-            new_clauses.append("}\n}")
-            new_query = '\n'.join(new_clauses)
-            try:
-                rows = self.execute_SPARQL(new_query)
-                classes = set([r[0] for r in rows])
-            except Exception as e:
-                print('class query Exception:', e)
-                print('action:', action)
-                print(new_query)
-                classes = set()
+                classes, relations = self.step_by_sparql(action)
         else:
             if is_entity(action):
                 in_relations = self.cache.get_entity_in_relations(action)
@@ -369,6 +383,65 @@ class PPODEnv(Env):
         self.cache.save_cache(self.cache.cache_path)
         return {"Property": relations.intersection(self.properties), "Classes": classes.intersection(self.classes),
                 "LiteralProperty": self.literal_properties}
+
+    def step_by_kg_api(self, action):
+        relations = set()
+        results = execute_lisp_by_kg_api(action)
+        for r in results:
+            out_relations = get_adjacent_relations_by_subject(r)
+            in_relations = get_adjacent_relations_by_object(r)
+            relations = relations.union(set(out_relations))
+            relations = relations.union(set(in_relations))
+        classes = set()
+        return classes, relations
+
+    def step_by_sparql(self, action):
+        sparql_query = lisp_to_sparql(action)
+        clauses = sparql_query.split("\n")
+        # query relations
+        relations = set()  # in and out relations
+        new_clauses = ["SELECT DISTINCT ?rel\nWHERE {\n?sub ?rel ?x .\n{"]
+        new_clauses.extend(clauses)
+        new_clauses.append("}\n}")
+        new_query = '\n'.join(new_clauses)
+        try:
+            rows = self.execute_SPARQL(new_query)
+        except Exception as e:
+            print('in_relation query exception:', e)
+            print('action:', action)
+            print(new_query)
+        else:
+            in_relations = [r[0] for r in rows]
+            relations = set(in_relations)
+        # query inverse relations
+        new_clauses = ["SELECT DISTINCT ?rel\nWHERE {\n?x ?rel ?obj .\n{"]
+        new_clauses.extend(clauses)
+        new_clauses.append("}\n}")
+        new_query = '\n'.join(new_clauses)
+        try:
+            rows = self.execute_SPARQL(new_query)
+        except Exception as e:
+            print('out_relation query exception:', e)
+            print('action:', action)
+            print(new_query)
+        else:
+            out_relations = [r[0] for r in rows]
+            out_relations = [r + '_inv' for r in out_relations]
+            relations = relations.union(set(out_relations))
+        # query classes
+        new_clauses = ["SELECT DISTINCT ?cls\nWHERE {\n?x a ?cls .\n{"]
+        new_clauses.extend(clauses)
+        new_clauses.append("}\n}")
+        new_query = '\n'.join(new_clauses)
+        try:
+            rows = self.execute_SPARQL(new_query)
+            classes = set([r[0] for r in rows])
+        except Exception as e:
+            print('class query Exception:', e)
+            print('action:', action)
+            print(new_query)
+            classes = set()
+        return classes, relations
 
     def execute_SPARQL(self, sparql_query):
         try:

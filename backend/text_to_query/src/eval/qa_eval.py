@@ -1,8 +1,10 @@
-import os
 import sys
+from pathlib import Path
 
 sys.path.append('.')
 sys.path.append('src')
+
+import os
 from pangu.ppod_api import PanguForPPOD
 from src.enumeration.graph_query import get_num_node
 from src.enumeration.graph_query import get_num_edge
@@ -22,22 +24,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     data = json.load(open(args.eval))
-    pangu = PanguForPPOD(openai_api_key=os.getenv('OPENAI_API_KEY'), llm_name=args.llm, use_kg_api=args.kg_api)
+    pangu = PanguForPPOD(api_key=os.getenv('OPENAI_API_KEY'), llm_name=args.llm, use_kg_api=args.kg_api)
+    proj_root = str(Path(__file__).parent.absolute()) + '/../..'
+    entity_to_label = json.load(open(os.path.join(proj_root, 'data/entity_to_label.json'), 'r'))
 
     results = []
     metrics = defaultdict(float)
+    max_steps = 3 if not args.kg_api else 1
     for sample in tqdm(data):
         question = sample['question']
         gold_s_expr = sample['s-expression']
         gold_s_expr_repr = sample['s-expression_str']
         gold_sparql = sample['sparql']
         gold_ans = execute_query(gold_sparql)
-        gold_ans_label = [pangu.entity_to_label[ans] if ans in pangu.entity_to_label else ans for ans in gold_ans]
+        gold_ans_label = []
+        for ans in gold_ans:
+            gold_ans_label.append(entity_to_label[ans[0]] if ans[0] in entity_to_label else ans[0])
         gold_graph_query = sample['graph_query']
         num_node = get_num_node(gold_graph_query)
         num_edge = get_num_edge(gold_graph_query)
 
-        predictions = pangu.text_to_query(question)
+        predictions = pangu.text_to_query(question, max_steps=max_steps)
         pred_s_expr = None
         pred_s_expr_repr = None
         pred_sparql = None

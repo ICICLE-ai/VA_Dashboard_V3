@@ -18,7 +18,7 @@ from sentence_transformers import SentenceTransformer
 from src.enumeration.schema_generation import lisp_to_repr
 from src.linking.node_retrieval_api import SentenceTransformerRetriever, BM25Retriever, Colbertv2Retrieval, GritLMRetriever
 from pangu.environment.examples.KB.PPODSparqlService import execute_query
-from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql
+from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql, execute_lisp_by_kg_api
 from pangu.language.plan_wrapper import Plan
 from pangu.language.ppod_language import PPODLanguage
 from pangu.ppod_agent import PPODAgent
@@ -113,6 +113,7 @@ class PanguForPPOD:
                 os.environ['OPENAI_API_KEY'] = api_key
 
         if use_kg_api:
+            self.use_kg_api = True
             all_concepts = get_all_concepts()
             all_relations = get_all_relations()
             all_instances = get_all_instances()
@@ -127,6 +128,7 @@ class PanguForPPOD:
             self.property_to_entity = self.kb_relations
             self.property_to_literal = []
         else:
+            self.use_kg_api = False
             # load data
             self.entity_to_label = json.load(open(os.path.join(proj_root, 'data/entity_to_label.json'), 'r'))
             self.label_to_entity = json.load(open(os.path.join(proj_root, "data/label_to_entity.json"), 'r'))
@@ -289,31 +291,56 @@ class PanguForPPOD:
 
         # convert plans to SPARQL queries and get their execution results
         res = []
-        num_valid = 0
-        for plan in final_plans[:30]:
-            sparql = lisp_to_sparql(plan.plan)
-            rows = execute_query(sparql)
-            if len(rows) > 0:
-                num_valid += 1
+        num_valid_query = 0
+        if not self.use_kg_api:
+            for plan in final_plans[:30]:
+                sparql = lisp_to_sparql(plan.plan)
+                rows = execute_query(sparql)
+                if len(rows) > 0:
+                    num_valid_query += 1
 
-            labels = []  # get labels if the results are entities
-            for item in rows:
-                if item[0] in self.entity_to_label:
-                    labels.append(self.entity_to_label[item[0]])
-                else:
-                    labels.append(item[0])
-            assert len(rows) == len(labels)
-            res.append(
-                {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
-                 'sparql': sparql, 'results': rows, 'labels': labels})
+                labels = []  # get labels if the results are entities
+                for item in rows:
+                    if item[0] in self.entity_to_label:
+                        labels.append(self.entity_to_label[item[0]])
+                    else:
+                        labels.append(item[0])
+                assert len(rows) == len(labels)
+                res.append(
+                    {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
+                     'sparql': sparql, 'results': rows, 'labels': labels})
 
-            if num_valid >= top_k:
-                break
+                if num_valid_query >= top_k:
+                    break
 
-        res = res[:top_k]
-        if num_valid:
-            res = [r for r in res if len(r['results']) > 0]
-        return res
+            res = res[:top_k]
+            if num_valid_query:
+                res = [r for r in res if len(r['results']) > 0]
+            return res
+        else:  # use_kg_api
+            for plan in final_plans[:30]:
+                results = execute_lisp_by_kg_api(plan.plan)
+                if len(results) > 0:
+                    num_valid_query += 1
+
+                labels = []  # get labels if the results are entities
+                for item in results:
+                    if item in self.entity_to_label:
+                        labels.append(self.entity_to_label[item])
+                    else:
+                        labels.append(item)
+                assert len(results) == len(labels)
+                res.append(
+                    {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
+                     'sparql': None, 'results': list(results), 'labels': labels})
+
+                if num_valid_query >= top_k:
+                    break
+
+            res = res[:top_k]
+            if num_valid_query:
+                res = [r for r in res if len(r['results']) > 0]
+            return res
 
     def retrieve_entity(self, question: str, top_k: int = 10, distinct: bool = True):
         return self.entity_retriever.get_top_k_sentences(question, top_k, distinct)
