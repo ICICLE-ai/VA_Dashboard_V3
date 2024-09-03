@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 
 const { cardWidth, cardHeight, resizeEndFunc } = initialize(props.data['width'], props.data['height']);
 
+
 const props = defineProps({
   data: {
     type: Object,
@@ -48,18 +49,26 @@ const handleFileUpload = (event) => {
         const data = worksheet.slice(1).map(row => {
           const rowData = {};
           headers.forEach((header, index) => {
-            rowData[header] = row[index];
+            let cellValue = row[index];
+            // Check if the cellValue is a number and within the Excel date range
+            if (typeof cellValue === 'number' && cellValue > 25569) {
+              // Convert Excel date serial number to JavaScript date
+              const date = new Date((cellValue - 25569) * 86400 * 1000);
+              // Format the date as needed, e.g., YYYY/MM/DD
+              cellValue = date.toISOString().split('T')[0];
+            }
+            rowData[header] = cellValue;
           });
           return rowData;
         });
-        
+
         tempParsedData[sheetName] = { data, headers };
-        props.data.output = data
+        props.data.output = data;
       });
 
       parsedData.value = tempParsedData;
       initializeTabulator(parsedData.value);
-      console.log(parsedData.value)
+      console.log(parsedData.value);
     };
     reader.readAsBinaryString(file);
   }
@@ -76,7 +85,7 @@ const initializeTabulator = (parsedDataValue) => {
       selectable: true,
       rowSelection: "checkbox",
       reactiveData: true,
-      columns: parsedDataValue[firstSheet].headers.map(header => ({ title: header, field: header })),
+      columns: parsedDataValue[firstSheet].headers.map(header => ({ title: header, field: header, width: 150 })),
       data: parsedDataValue[firstSheet].data,
       rowSelected: (row) => {
         console.log('Row Selected:', row.getData());
@@ -139,30 +148,89 @@ watch(selectedRows, (newSelectedRows) => {
 }, { deep: true });
 
 watch(() => props['data']['input'], (newData) => {
-  if (Array.isArray(newData) && newData.length > 0 && typeof newData[0] === 'object') {
-    const temp = toRaw(newData);
-    const columns = Object.keys(temp[0]).map(column => ({ title: column, field: column }));
-    if (tabulator.value) {
-      tabulator.value.setColumns(columns);
-      tabulator.value.setData(temp).then(() => {
-        console.log('Data updated');
-      }).catch(error => {
-        console.error('Error updating data:', error);
-      });
+  if (Array.isArray(newData) && newData.length > 0) {
+    // Handle the new format: Objects with 'Concept.value' key
+    if (typeof newData[0] === 'object' && newData[0].hasOwnProperty('Concept.value')) {
+      const temp = toRaw(newData);
+    
+      // Transform data to a format Tabulator can understand
+      const transformedData = temp.map(item => ({
+        Concept: item['Concept.value']  // Assuming 'Concept.value' is the key for the value
+      }));
+    
+      // Define columns based on transformed data
+      const columns = Object.keys(transformedData[0]).map(column => ({ title: column, field: column }));
+    
+      console.log("Transformed Data:", transformedData);
+    
+      if (tabulator.value) {
+        tabulator.value.setColumns(columns);
+        tabulator.value.setData(transformedData).then(() => {
+          console.log('Data updated');
+        }).catch(error => {
+          console.error('Error updating data:', error);
+        });
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: columns,
+          data: transformedData,
+          reactiveData: true,
+        });
+      }
+
+      props['data']['output'] = newData;
+    } 
+    // Handle the original format: Objects with multiple keys
+    else if (typeof newData[0] === 'object' && Object.keys(newData[0]).length > 0) {
+      const temp = toRaw(newData);
+      const columns = Object.keys(temp[0]).map(column => ({ title: column, field: column }));
+      
+      if (tabulator.value) {
+        tabulator.value.setColumns(columns);
+        tabulator.value.setData(temp).then(() => {
+          console.log('Data updated');
+        }).catch(error => {
+          console.error('Error updating data:', error);
+        });
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: columns,
+          data: temp,
+          reactiveData: true,
+        });
+      }
+
+      props['data']['output'] = newData;
+      console.log("newdata", newData);
+    } else {
+      // If data format is not recognized, clear the table
+      if (tabulator.value) {
+        tabulator.value.setData([]);
+        tabulator.value.redraw(true);
+      } else {
+        tabulator.value = new Tabulator(table.value, {
+          columns: [],
+          data: [],
+          reactiveData: true,
+        });
+      }
     }
-    props['data']['output'] = newData;
   } else {
+    // If newData is not an array or is an empty array, clear the table
     if (tabulator.value) {
       tabulator.value.setData([]);
       tabulator.value.redraw(true);
     } else {
       tabulator.value = new Tabulator(table.value, {
+        columns: [],
         data: [],
         reactiveData: true,
       });
     }
   }
 }, { deep: true });
+
+
 
 const sortField = ref('Name');
 const sortDirection = ref('Asc');
@@ -187,17 +255,17 @@ function clearFilter() {
 
 <template>
   <div>
-    <NodeResizer @resize="resizeEndFunc" min-width="100" min-height="30" color="white"/>
+    <NodeResizer @resize="resizeEndFunc" min-width="100" min-height="50" color="white"/>
     <Toolbar :data="data" :id="id" :type="type"></Toolbar>
     <Handle type="target" :position="Position.Left" />
     <Handle type="source" :position="Position.Right" />
-    
+
     <!-- File Input for Excel Upload -->
     <input type="file" @change="handleFileUpload" accept=".xlsx, .xls" style="margin-bottom: 20px;" />
-    
+
     <v-card
-      :width="cardWidth"
-      :height="cardHeight"
+      :width=1000
+      :height=1000
       variant="outlined"
       :title="'Table Viewer'"
       :style="{ backgroundColor: data.style['background'],
@@ -213,12 +281,15 @@ function clearFilter() {
             </v-tab>
           </v-tabs>
         </div>
-        <div ref="table"></div>
+        <div class="table-container">
+          <div ref="table"></div>
+        </div>
         <v-btn @click="getSelectedRows">Get Selected Rows</v-btn>
       </div>
     </v-card>
   </div>
 </template>
+
 
 <style>
   .filter-button-col {
@@ -228,5 +299,11 @@ function clearFilter() {
     min-width: 60px;
     max-width: 120px;
     text-align: center;
+  }
+  .table-container {
+    max-height: 800px; /* Adjust the height as needed */
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
   }
 </style>
