@@ -18,6 +18,6 @@ if __name__ == "__main__":
     pangu = PanguForPPOD(api_key=api_key, llm_name=args.llm, use_kg_api=True)
 
     # text-to-query API demo
-    res = pangu.text_to_query('What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?')
+    res = pangu.text_to_query('Which infrastructures are adjacent to Drakes Estero?')
     for item in res:
         print(item)

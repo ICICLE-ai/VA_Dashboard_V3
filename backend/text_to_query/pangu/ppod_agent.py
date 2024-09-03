@@ -1,9 +1,12 @@
 import itertools
 import json
 import os.path
+import sys
 from collections import defaultdict
+from pathlib import Path
 from typing import List, Dict, Set
 
+sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
 from pangu.environment.environment import Env
 from pangu.environment.examples.KB.PPODSparqlService import execute_query
 from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql

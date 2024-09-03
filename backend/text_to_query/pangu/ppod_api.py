@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
+sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
 from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_uuid_concept_maps, get_uuid_relation_maps, get_uuid_instance_maps
 
 from backend.llama_service import LlamaCppWrapper, OllamaWrapper
@@ -15,13 +15,13 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
 from sentence_transformers import SentenceTransformer
 
-from src.enumeration.schema_generation import lisp_to_repr
-from src.linking.node_retrieval_api import SentenceTransformerRetriever, BM25Retriever, Colbertv2Retrieval, GritLMRetriever
-from pangu.environment.examples.KB.PPODSparqlService import execute_query
-from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql, execute_lisp_by_kg_api
-from pangu.language.plan_wrapper import Plan
-from pangu.language.ppod_language import PPODLanguage
-from pangu.ppod_agent import PPODAgent
+from backend.text_to_query.src.enumeration.schema_generation import lisp_to_repr
+from backend.text_to_query.src.linking.node_retrieval_api import SentenceTransformerRetriever, BM25Retriever, Colbertv2Retrieval, GritLMRetriever
+from backend.text_to_query.pangu.environment.examples.KB.PPODSparqlService import execute_query
+from backend.text_to_query.pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql, execute_lisp_by_kg_api
+from backend.text_to_query.pangu.language.plan_wrapper import Plan
+from backend.text_to_query.pangu.language.ppod_language import PPODLanguage
+from backend.text_to_query.pangu.ppod_agent import PPODAgent
 
 
 def format_candidates(plans):
