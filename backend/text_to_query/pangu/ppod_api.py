@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
+
+from typing import List
 from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_uuid_concept_maps, get_uuid_relation_maps, get_uuid_instance_maps
 
 from backend.llama_service import LlamaCppWrapper, OllamaWrapper
@@ -103,25 +105,59 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
     return top_scores
 
 
+def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
+    for token in lisp.split():
+        if token.startswith('('):
+            continue
+        inv = False
+        if token.strip(')').endswith('_inv'):
+            inv = True
+            token = token.strip(')').replace('_inv', '')
+        else:
+            token = token.strip(')')
+
+        if inv is False:
+            label = pangu_for_sparql.entity_to_label.get(token, None)
+            if label is not None:
+                uuid = pangu_for_kg_api.label_to_entity.get(label, None)
+                if uuid is not None:
+                    lisp = lisp.replace(token, f"[{uuid[0]}]")
+
+        label = pangu_for_sparql.predicate_to_label.get(token, None)
+        if label is not None:
+            uuid = pangu_for_kg_api.label_to_predicate.get(label, None)
+            if uuid is not None:
+                lisp = lisp.replace(token, f"[{uuid[0]}]")
+
+    return lisp
+
+
+def add_kg_api_to_queries(queries: List):
+    for q in queries:
+        kg_api_s_expr = convert_ppod_kg_lisp_to_kg_api_lisp(q['s-expression'])
+        q['kg_api_s_expr'] = kg_api_s_expr
+    return queries
+
+
 class PanguForPPOD:
-    def __init__(self, proj_root: str = None, api_key: str = None, llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
+    def __init__(self, proj_root: str = None, api_key: str = '', llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
         if proj_root is None:
             proj_root = str(Path(__file__).parent.absolute()) + '/..'
-        if api_key is not None:
+        if api_key is not None and len(api_key) > 0:
             if llm_name.startswith('gpt-'):
                 assert api_key.startswith("sk-")
                 os.environ['OPENAI_API_KEY'] = api_key
 
         if use_kg_api:
             self.use_kg_api = True
-            all_concepts = get_all_concepts()
-            all_relations = get_all_relations()
-            all_instances = get_all_instances()
+            self.all_concepts = get_all_concepts()
+            self.all_relations = get_all_relations()
+            self.all_instances = get_all_instances()
             # all_propositions = get_all_propositions()
 
-            self.class_to_label, self.label_to_class = get_uuid_concept_maps(all_concepts)
-            self.predicate_to_label, self.label_to_predicate = get_uuid_relation_maps(all_relations)
-            self.entity_to_label, self.label_to_entity = get_uuid_instance_maps(all_instances)
+            self.class_to_label, self.label_to_class = get_uuid_concept_maps(self.all_concepts)
+            self.predicate_to_label, self.label_to_predicate = get_uuid_relation_maps(self.all_relations)
+            self.entity_to_label, self.label_to_entity = get_uuid_instance_maps(self.all_instances)
             self.kb_relations = list(self.label_to_predicate.keys())
             self.kb_classes = list(self.label_to_class.keys())
             self.literals = []
@@ -316,6 +352,7 @@ class PanguForPPOD:
             res = res[:top_k]
             if num_valid_query:
                 res = [r for r in res if len(r['results']) > 0]
+            # res = add_kg_api_to_queries(res)
             return res
         else:  # use_kg_api
             for plan in final_plans[:30]:
@@ -350,3 +387,7 @@ class PanguForPPOD:
 
     def retrieve_literal(self, question: str, top_k: int = 10, distinct: bool = True):
         return self.literal_retriever.get_top_k_sentences(question, top_k, distinct)
+
+
+pangu_for_sparql = PanguForPPOD(llm_name='gpt-4o', use_kg_api=False)
+pangu_for_kg_api = PanguForPPOD(llm_name='gpt-4o', use_kg_api=True)

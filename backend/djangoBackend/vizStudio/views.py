@@ -16,11 +16,10 @@ import os
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper
 
-from . import pangu
 from .speechframework.models import ConformerModel
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '../')))
 
-
+from text_to_query.pangu.ppod_api import pangu_for_sparql
 # import AutoVega.visualize as autovis
 from vega_helper.visualize import AutoVega
 #speech 2 text imports
@@ -76,7 +75,7 @@ def text2query(request):
     question = data.get('question', '')
     openai_api = data.get('openai_api','')
     # toy_data = [{'input': 'What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?', 's-expression': '(JOIN https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureDownstream_inv (JOIN https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureAdjacent https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#inf_725827))', 's-expression_repr': '(JOIN [is downstream infrastructure of] (JOIN [adjacent infrastructure] [Drakes Estero]))', 'score': -1.9361265e-07, 'sparql': 'SELECT DISTINCT ?x\nWHERE {\n?x0 <https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureAdjacent> <https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#inf_725827> .\n?x0 <https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureDownstream> ?x .\nFILTER (?x != <https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#inf_725827>)\n}', 'results': [('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#inf_5f26fd',)], 'labels': ['Drakes Bay']},
-    res = pangu.text_to_query(question, openai_api_key=openai_api)
+    res = pangu_for_sparql.text_to_query(question, openai_api_key=openai_api)
     return JsonResponse({"result": res})
 
 @csrf_exempt
