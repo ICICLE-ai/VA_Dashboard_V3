@@ -183,7 +183,7 @@ class PanguForPPOD:
         self.llm_name = llm_name
         assert self.llm_name is not None, 'Please set LLM model name or model path'
         if self.llm_name.startswith('gpt-'):
-            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60)
+            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
         elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
             self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
         # elif 'llama' in self.llm_name.lower():
