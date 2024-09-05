@@ -217,17 +217,11 @@ class PanguForPPOD:
             raise NotImplementedError(f'Retriever {retriever} is not implemented')
 
         self.llm_name = llm_name
+        self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
-        if self.llm_name.startswith('gpt-'):
-            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
-        elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
-            self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
-        # elif 'llama' in self.llm_name.lower():
-        # self.llm = LlamaCppWrapper(model_path=self.llm_name)
-
         print('Text-to-query initialized')
 
-    def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, openai_api_key: str = None):
+    def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, api_key: str = None):
         """
 
         :param question: natural language question
@@ -236,10 +230,18 @@ class PanguForPPOD:
         :param verbose: for debugging
         :return: a list of plans
         """
-        if openai_api_key is not None:
-            assert openai_api_key.startswith("sk-")
-            os.environ['OPENAI_API_KEY'] = openai_api_key
-        assert os.environ['OPENAI_API_KEY'] is not None, 'Please set OPENAI_API_KEY in environment variable'
+        if api_key is not None:
+            if self.llm_name.startswith('gpt-'):
+                assert api_key.startswith("sk-")
+                os.environ['OPENAI_API_KEY'] = api_key
+            assert os.environ['OPENAI_API_KEY'] is not None, 'Please set OPENAI_API_KEY in environment variable'
+
+        # load LLM
+        if self.llm is None:
+            if self.llm_name.startswith('gpt-'):
+                self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
+            elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
+                self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
 
         # from langchain.globals import set_llm_cache
         # from langchain_community.cache import SQLiteCache
