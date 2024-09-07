@@ -1,9 +1,13 @@
 import re
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
 
 from backend.milkOligoDB.src.api_client import get_subject_by_object_and_relation, get_adjacent_relations_by_subject, get_adjacent_relations_by_object
-from pangu.environment.environment import Env
-from pangu.environment.examples.KB.PPODSparqlService import PPODSparqlService, QueryAPI
-from pangu.language.util import lisp_to_nested_expression, linearize_lisp_expression
+from backend.text_to_query.pangu.environment.environment import Env
+from backend.text_to_query.pangu.environment.examples.KB.PPODSparqlService import PPODSparqlService, QueryAPI
+from backend.text_to_query.pangu.language.util import lisp_to_nested_expression, linearize_lisp_expression
 
 
 def is_valid_uuid(uuid_str):
@@ -333,6 +337,7 @@ class PPODEnv(Env):
             self.use_kg_api = True
         else:
             self.cache = PPODSparqlService()
+            self.use_kg_api = False
         self.relations = relations - {'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#label',
                                       'http://www.w3.org/2004/02/skos/core#altLabel', 'http://purl.org/dc/terms/title', 'http://schema.org/identifier',
                                       'http://poderopedia.com/vocab/hasURL'}

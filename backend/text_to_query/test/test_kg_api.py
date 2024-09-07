@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+from pangu.ppod_api import pangu_for_kg_api
+
 sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
 
 import argparse
@@ -15,9 +17,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     api_key = os.getenv('OPENAI_API_KEY') if args.api_key is None else args.api_key
-    pangu = PanguForPPOD(api_key=api_key, llm_name=args.llm, use_kg_api=True)
 
     # text-to-query API demo
-    res = pangu.text_to_query('What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?')
+    res = pangu_for_kg_api.text_to_query('Which infrastructures are adjacent to Drakes Estero?')
     for item in res:
         print(item)
