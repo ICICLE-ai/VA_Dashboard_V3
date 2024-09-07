@@ -513,7 +513,7 @@ onMounted(connect);
           <v-form ref="form">
             <v-text-field v-model="openai_api" label="OpenAI API" required></v-text-field>
 
-            <v-card class="mb-4">
+            <!-- <v-card class="mb-4">
               <v-card-title class="text-h5 font-weight-bold">
                 Speech Recognition
               </v-card-title>
@@ -523,10 +523,10 @@ onMounted(connect);
                 <v-text-field v-model="asrAndWakeword" label="Detected Question" style="width: 100%;"
                   required></v-text-field>
               </v-card-text>
-            </v-card>
+            </v-card> -->
 
             <!-- <v-btn @click="submitForm">Listen</v-btn> -->
-            <v-btn @click="wakeWordDetection">Start Recording</v-btn>
+            <!-- <v-btn @click="wakeWordDetection">Start Recording</v-btn> -->
 
             <!-- Text area to display the result -->
             <!-- <textarea v-model="transcription" rows="10" cols="50" placeholder="Transcription"></textarea> -->
