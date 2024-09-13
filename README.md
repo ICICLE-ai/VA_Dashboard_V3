@@ -91,9 +91,11 @@ The Table Viewer component enables users to upload a CSV file containing data re
 
 
 
-4. SPARQL Editor and Executor (TBD)
+4. SPARQL Editor and Executor
+This component allows users to create SPARQL queries in the SPARQL Editor and connect that to a SPARQL Executor where users can click the “Query” Button. Next a table viewer needs to be connected to see the outputs of the query. The example shows a query executed to retrieve distinct concepts used in the dbpedia dataset. 
+<img width="1001" alt="vegalite" src="[https://github.com/user-attachments/assets/3e924617-bb46-4ea5-af16-dec08617bf3d](https://github.com/user-attachments/assets/d310bfad-bd47-4aab-812e-88797688499c)">
 
-5. VegaLite Visualizer
+6. VegaLite Visualizer
 This component automatically generates visualization charts for input data. When a CSV file is uploaded, the corresponding chart for that table will be displayed for which an example is shown below.
 <img width="1001" alt="vegalite" src="https://github.com/user-attachments/assets/3e924617-bb46-4ea5-af16-dec08617bf3d">
 
