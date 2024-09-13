@@ -100,8 +100,11 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
     for top_log in top_logprobs[:beam_size]:
         try:
             top_scores[plans[ord(top_log['token'].lower()) - 97]] = top_log['logprob']
+        except TypeError as e:
+            # print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            pass
         except Exception as e:
-            print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            print(e)
     return top_scores
 
 
@@ -116,7 +119,7 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
         else:
             token = token.strip(')')
 
-        if inv is False:
+        if inv is False:  # could be entity or relation
             label = pangu_for_sparql.entity_to_label.get(token, None)
             if label is not None:
                 uuid = pangu_for_kg_api.label_to_entity.get(label, None)
@@ -125,6 +128,7 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
 
         label = pangu_for_sparql.predicate_to_label.get(token, None)
         if label is not None:
+            label = '_'.join(label.split(' '))
             uuid = pangu_for_kg_api.label_to_predicate.get(label, None)
             if uuid is not None:
                 lisp = lisp.replace(token, f"[{uuid[0]}]")
@@ -135,7 +139,11 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
 def add_kg_api_to_queries(queries: List):
     for q in queries:
         kg_api_s_expr = convert_ppod_kg_lisp_to_kg_api_lisp(q['s-expression'])
-        q['kg_api_s_expr'] = kg_api_s_expr
+        from backend.milkOligoDB.src.parse_lisp_to_apis import process_lisp_expression
+        if 'https://raw.githubusercontent.com/adhollander/' not in kg_api_s_expr:
+            api_calls = process_lisp_expression(kg_api_s_expr.replace('[', '').replace(']', ''))
+            q['kg_api_s_expr'] = kg_api_s_expr
+            q['kg_api_call'] = api_calls
     return queries
 
 
@@ -354,7 +362,7 @@ class PanguForPPOD:
             res = res[:top_k]
             if num_valid_query:
                 res = [r for r in res if len(r['results']) > 0]
-            # res = add_kg_api_to_queries(res)
+            res = add_kg_api_to_queries(res)
             return res
         else:  # use_kg_api
             for plan in final_plans[:30]:

@@ -8,8 +8,6 @@ sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
 import argparse
 import os
 
-from backend.text_to_query.pangu.ppod_api import PanguForPPOD
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--api_key', type=str)
