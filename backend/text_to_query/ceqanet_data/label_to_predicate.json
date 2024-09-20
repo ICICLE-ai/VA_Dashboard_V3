@@ -1,0 +1,161 @@
+{
+    "alt label": [
+        "http://www.w3.org/2004/02/skos/core#altLabel"
+    ],
+    "identifier": [
+        "http://schema.org/identifier"
+    ],
+    "noe exempt status": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOEExemptStatus"
+    ],
+    "noc project issues": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#nocProjectIssues"
+    ],
+    "nod findings made pursuant": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODFindingsMadePursuant"
+    ],
+    "nod significant environmental impact": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODSignificantEnvironmentalImpact"
+    ],
+    "contact information": [
+        "http://vivoweb.org/ontology/core#contactInformation"
+    ],
+    "noe reasons for exemption": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOEReasonsForExemption"
+    ],
+    "nod mitigation reporting or monitoring plan": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODMitigationReportingOrMonitoringPlan"
+    ],
+    "nod statement of overriding considerations adopted": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODStatementOfOverridingConsiderationsAdopted"
+    ],
+    "proj details": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projDetails"
+    ],
+    "lead org": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#leadOrg"
+    ],
+    "county clerks": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#countyClerks"
+    ],
+    "nod agency": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODAgency"
+    ],
+    "title": [
+        "http://purl.org/dc/terms/title"
+    ],
+    "nod environmental impact report prepared": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODEnvironmentalImpactReportPrepared"
+    ],
+    "location parcel number": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationParcelNumber"
+    ],
+    "location state highways": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationStateHighways"
+    ],
+    "spatial": [
+        "http://purl.org/dc/terms/spatial"
+    ],
+    "noc has non late comment": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCHasNonLateComment"
+    ],
+    "noc local review end date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCLocalReviewEndDate"
+    ],
+    "nod negative declaration prepared": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODNegativeDeclarationPrepared"
+    ],
+    "noc state review end date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCStateReviewEndDate"
+    ],
+    "phone": [
+        "http://xmlns.com/foaf/0.1/phone"
+    ],
+    "contact authority": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#contactAuthority"
+    ],
+    "noc state review start date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCStateReviewStartDate"
+    ],
+    "noc local review start date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCLocalReviewStartDate"
+    ],
+    "ro_0000087": [
+        "http://purl.obolibrary.org/obo/RO_0000087"
+    ],
+    "noe exempt citation": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOEExemptCitation"
+    ],
+    "location airports": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationAirports"
+    ],
+    "type": [
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    ],
+    "location total acres": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationTotalAcres"
+    ],
+    "location zip code": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationZipCode"
+    ],
+    "lead agency name": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#leadAgencyName"
+    ],
+    "fsi_000239": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239"
+    ],
+    "label": [
+        "http://www.w3.org/2000/01/rdf-schema#label"
+    ],
+    "nod final eiravailable location": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODFinalEIRAvailableLocation"
+    ],
+    "has url": [
+        "http://poderopedia.com/vocab/hasURL"
+    ],
+    "noc development type": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCDevelopmentType"
+    ],
+    "in county": [
+        "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty"
+    ],
+    "noc local action": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NOCLocalAction"
+    ],
+    "location cross strees": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationCrossStrees"
+    ],
+    "name": [
+        "http://xmlns.com/foaf/0.1/name"
+    ],
+    "document type": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#documentType"
+    ],
+    "document received date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#documentReceivedDate"
+    ],
+    "nod mitigation measures": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODMitigationMeasures"
+    ],
+    "location waterways": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#locationWaterways"
+    ],
+    "nod other document type": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODOtherDocumentType"
+    ],
+    "nod approved date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODApprovedDate"
+    ],
+    "address": [
+        "http://schema.org/address"
+    ],
+    "nod approved by lead agency": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#NODApprovedByLeadAgency"
+    ],
+    "mbox": [
+        "http://xmlns.com/foaf/0.1/mbox"
+    ],
+    "document posted date": [
+        "https://raw.githubusercontent.com/adhollander/CEQAnet/CEQAnet_terms.ttl#documentPostedDate"
+    ]
+}

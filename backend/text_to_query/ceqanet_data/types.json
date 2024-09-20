@@ -1,0 +1,6 @@
+[
+    "http://xmlns.com/foaf/0.1/Person",
+    "http://vivoweb.org/ontology/core#Project",
+    "<https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#Issue>",
+    "http://xmlns.com/foaf/0.1/Organization"
+]

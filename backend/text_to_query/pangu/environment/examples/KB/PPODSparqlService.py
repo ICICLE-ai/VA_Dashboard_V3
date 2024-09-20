@@ -103,6 +103,8 @@ class PPODSparqlService:
         return self.cache["in_relations"][entity]
 
     def get_literal_in_relations(self, literal: str):
+        if len(literal) > 50:
+            return []
         if literal not in self.cache["in_relations"]:
             rows = execute_query(f"SELECT DISTINCT ?p WHERE {{ ?s ?p \"{literal}\" }}")
             self.cache["in_relations"][literal] = [row[0] for row in rows]

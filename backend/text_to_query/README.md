@@ -61,7 +61,17 @@ mkdir ppod_kg
 cp /this_project/backend/text_to_query/config/virtuoso.ini your_virtuoso_path/ppod_kg
 ```
 
-3. Put PPOD KG ttl file under `your_data_path` and load it to Virtuoso using `isql`:
+Modify the `virtuoso.ini` file if you need to set a different port or path.
+
+3. Put PPOD KG ttl file under `your_data_path`, which is specified in `virtuoso.ini`.
+
+4. Start the Virtuoso server:
+
+```shell
+python3 virtuoso.py start 3002 -d ppod_kg
+```
+
+5. Load ttl file to Virtuoso using `isql`:
 
 ```
 /your_virtuoso_path/bin/isql 13002 dba dba
@@ -71,15 +81,9 @@ rdf_loader_run();
 
 Where `13002` is the `isql` port in `virtuoso.ini` file.
 
-4. Start the Virtuoso server:
+6. (Optional) Set the endpoint url in `pangu/environment/examples/KB/PPODSparqlService.py` if you want to change the default port `3002` or use a public service.
 
-```shell
-python3 virtuoso.py start 3002 -d ppod_kg
-```
-
-5. (Optional) Set the endpoint url in `pangu/environment/examples/KB/PPODSparqlService.py` if you want to change the default port `3002` or use a public service.
-
-6. Stop the Virtuoso server when you finish:
+7. Stop the Virtuoso server when you finish:
 
 ```shell
 python3 virtuoso.py stop 3002
