@@ -11,12 +11,14 @@ import VisNode from './Modules/Vis.vue'
 import QueryNode from './Modules/Query.vue'
 import TableViewerNode from './Modules/TableViewer.vue'
 import GraphViewerNode from './Modules/GraphViewer.vue'
+import GraphViewerForBackendNode from './Modules/GraphViewerForBackend.vue'
 import TextViewerNode from './Modules/TextViewer.vue'
 import ScatterplotNode from './Modules/Scatterplot.vue'
 import VegaLiteNode from './Modules/VegaLite.vue'
 import NetworkPlotNode from './Modules/Networkplot.vue'
 import SparqlEditorNode from './Modules/SparqlEditor.vue'
 import SparqlExecutorNode from './Modules/SparqlExecutor.vue'
+import TextAreaNode from './Modules/TextArea.vue'
 // import store js 
 import {useCardManage} from '@/stores/helper.js'
 import { storeToRefs } from 'pinia'
@@ -182,6 +184,9 @@ function onConnect(params) {
               <template #node-graphViewer="{data,id,type}">
                 <GraphViewerNode :data="data" :id="id" :type="type"></GraphViewerNode>
               </template>
+              <template #node-graphViewerForBackend="{data,id,type}">
+                <GraphViewerForBackendNode :data="data" :id="id" :type="type"></GraphViewerForBackendNode>
+              </template>
               <template #node-vegaLite="{data,id,type}">
                 <VegaLiteNode :data="data" :id="id" :type="type"></VegaLiteNode>
               </template>
@@ -205,6 +210,10 @@ function onConnect(params) {
 
               <template #node-sparqlExecutor="{data,id,type}">
                 <SparqlExecutorNode :data="data" :id="id" :type="type"></SparqlExecutorNode>
+              </template>
+
+              <template #node-textArea="{data,id,type}">
+                <TextAreaNode :data="data" :id="id" :type="type"></TextAreaNode>
               </template>
 
               

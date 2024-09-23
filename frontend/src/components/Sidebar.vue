@@ -25,8 +25,8 @@ const cardManageStore = storeToRefs(cardManage)
 const ws = ref(null);
 const loading = ref(false);
 // const question = ref('What downstream infrastructures are connected to adjacent infrastructure in Drakes Estero?')
-const question = ref('Find possible collaborators that work on water quality.');
-const asrAndWakeword = ref('Your question will appear here')
+const question = ref('');
+const asrAndWakeword = ref('')
 
 const openai_api = ref('');
 const receivedMessage = ref('');
@@ -393,7 +393,9 @@ const text2query = () => {
       's-expression_repr': '#e78ac3',
       'sparql':'#a6d854',
       'results':'#ffd92f',
-      'labels':'#e5c494'
+      'labels':'#e5c494',
+      'kg_api_s_expr': '#699eb3',
+      'kg_api_call': '#71b369'
     })
 
     loading_text2query.value = true;
@@ -483,6 +485,11 @@ onMounted(connect);
         <div class="drag-node" :draggable="true" @dragstart="onDragStart($event, {type:'sparqlExecutor', title:'SPARQL Executor'})">
           <font-awesome-icon :icon="['fas','pen-to-square']" class="drag-icon"/>SPARQL Executor</div>
       </v-row>
+      <v-row>
+        <div class="drag-node" :draggable="true" @dragstart="onDragStart($event, {type:'textArea', title:'Question Generator'})">
+          <font-awesome-icon :icon="['fas','pen-to-square']" class="drag-icon"/>Question Generator</div>
+      </v-row>
+
       <!-- <v-row>
         <div class="drag-node" :draggable="true" @dragstart="onDragStart($event, {type:'textViewer', title:'Text Viewer'})">
           <font-awesome-icon :icon="['fas','comment']" class="drag-icon"/>Text Viewer</div>

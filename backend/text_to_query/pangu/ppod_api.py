@@ -1,11 +1,12 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.absolute()) + '/..')
-from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_all_propositions, get_uuid_concept_maps, get_uuid_relation_maps, \
-    get_uuid_instance_maps
+sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
 
-from backend.llama_service import LlamaCppWrapper
+from typing import List
+from backend.milkOligoDB.src.api_client import get_all_concepts, get_all_relations, get_all_instances, get_uuid_concept_maps, get_uuid_relation_maps, get_uuid_instance_maps
+
+from backend.llama_service import LlamaCppWrapper, OllamaWrapper
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
 import os.path
@@ -16,13 +17,13 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
 from sentence_transformers import SentenceTransformer
 
-from src.enumeration.schema_generation import lisp_to_repr
-from src.linking.node_retrieval_api import SentenceTransformerRetriever, BM25Retriever, Colbertv2Retrieval, GritLMRetriever
-from pangu.environment.examples.KB.PPODSparqlService import execute_query
-from pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql
-from pangu.language.plan_wrapper import Plan
-from pangu.language.ppod_language import PPODLanguage
-from pangu.ppod_agent import PPODAgent
+from backend.text_to_query.src.enumeration.schema_generation import lisp_to_repr
+from backend.text_to_query.src.linking.node_retrieval_api import SentenceTransformerRetriever, BM25Retriever, Colbertv2Retrieval, GritLMRetriever
+from backend.text_to_query.pangu.environment.examples.KB.PPODSparqlService import execute_query
+from backend.text_to_query.pangu.environment.examples.KB.ppod_environment import PPODEnv, lisp_to_sparql, execute_lisp_by_kg_api
+from backend.text_to_query.pangu.language.plan_wrapper import Plan
+from backend.text_to_query.pangu.language.ppod_language import PPODLanguage
+from backend.text_to_query.pangu.ppod_agent import PPODAgent
 
 
 def format_candidates(plans):
@@ -87,7 +88,7 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
 
     prompt_value = chat_prompt.format_prompt(question=question, format_candidates=format_candidates(plans))
 
-    if isinstance(llm, ChatOpenAI) or isinstance(llm, LlamaCppWrapper):
+    if isinstance(llm, ChatOpenAI) or isinstance(llm, LlamaCppWrapper) or isinstance(llm, OllamaWrapper):
         completion = llm.invoke(prompt_value.to_messages(), max_tokens=1, seed=1, logprobs=True, top_logprobs=20, temperature=0.5,
                                 logit_bias={token_id: 99 for token_id in range(64, 64 + 26)})
         top_logprobs = completion.response_metadata['logprobs']['content'][0]['top_logprobs']
@@ -99,34 +100,80 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
     for top_log in top_logprobs[:beam_size]:
         try:
             top_scores[plans[ord(top_log['token'].lower()) - 97]] = top_log['logprob']
+        except TypeError as e:
+            # print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            pass
         except Exception as e:
-            print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            print(e)
     return top_scores
 
 
+def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
+    for token in lisp.split():
+        if token.startswith('('):
+            continue
+        inv = False
+        if token.strip(')').endswith('_inv'):
+            inv = True
+            token = token.strip(')').replace('_inv', '')
+        else:
+            token = token.strip(')')
+
+        if inv is False:  # could be entity or relation
+            label = pangu_for_sparql.entity_to_label.get(token, None)
+            if label is not None:
+                uuid = pangu_for_kg_api.label_to_entity.get(label, None)
+                if uuid is not None:
+                    lisp = lisp.replace(token, f"[{uuid[0]}]")
+
+        label = pangu_for_sparql.predicate_to_label.get(token, None)
+        if label is not None:
+            label = '_'.join(label.split(' '))
+            uuid = pangu_for_kg_api.label_to_predicate.get(label, None)
+            if uuid is not None:
+                lisp = lisp.replace(token, f"[{uuid[0]}]")
+
+    return lisp
+
+
+##This function's frontend changes like box colors are done in Sidebar.vue file
+def add_kg_api_to_queries(queries: List):
+    for q in queries:
+        kg_api_s_expr = convert_ppod_kg_lisp_to_kg_api_lisp(q['s-expression'])
+        from backend.milkOligoDB.src.parse_lisp_to_apis import process_lisp_expression
+        if 'https://raw.githubusercontent.com/adhollander/' not in kg_api_s_expr:
+            api_calls = process_lisp_expression(kg_api_s_expr.replace('[', '').replace(']', ''))
+            q['kg_api_s_expr'] = kg_api_s_expr
+            q['kg_api_call'] = api_calls
+    return queries
+
+
 class PanguForPPOD:
-    def __init__(self, proj_root: str = None, openai_api_key: str = None, llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
+    def __init__(self, proj_root: str = None, api_key: str = '', llm_name: str = 'gpt-4o', retriever: str = 'sentence-transformers/gtr-t5-base', use_kg_api=False):
         if proj_root is None:
             proj_root = str(Path(__file__).parent.absolute()) + '/..'
-        if openai_api_key is not None:
-            assert openai_api_key.startswith("sk-")
-            os.environ['OPENAI_API_KEY'] = openai_api_key
+        if api_key is not None and len(api_key) > 0:
+            if llm_name.startswith('gpt-'):
+                assert api_key.startswith("sk-")
+                os.environ['OPENAI_API_KEY'] = api_key
 
         if use_kg_api:
-            all_concepts = get_all_concepts()
-            all_relations = get_all_relations()
-            all_instances = get_all_instances()
+            self.use_kg_api = True
+            self.all_concepts = get_all_concepts()
+            self.all_relations = get_all_relations()
+            self.all_instances = get_all_instances()
             # all_propositions = get_all_propositions()
 
-            self.class_to_label, self.label_to_class = get_uuid_concept_maps(all_concepts)
-            self.predicate_to_label, self.label_to_predicate = get_uuid_relation_maps(all_relations)
-            self.entity_to_label, self.label_to_entity = get_uuid_instance_maps(all_instances)
+            self.class_to_label, self.label_to_class = get_uuid_concept_maps(self.all_concepts)
+            self.predicate_to_label, self.label_to_predicate = get_uuid_relation_maps(self.all_relations)
+            self.entity_to_label, self.label_to_entity = get_uuid_instance_maps(self.all_instances)
             self.kb_relations = list(self.label_to_predicate.keys())
             self.kb_classes = list(self.label_to_class.keys())
             self.literals = []
             self.property_to_entity = self.kb_relations
             self.property_to_literal = []
         else:
+            self.use_kg_api = False
             # load data
             self.entity_to_label = json.load(open(os.path.join(proj_root, 'data/entity_to_label.json'), 'r'))
             self.label_to_entity = json.load(open(os.path.join(proj_root, "data/label_to_entity.json"), 'r'))
@@ -179,15 +226,16 @@ class PanguForPPOD:
             raise NotImplementedError(f'Retriever {retriever} is not implemented')
 
         self.llm_name = llm_name
+        self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
         if self.llm_name.startswith('gpt-'):
-            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60)
+            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key='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')
         elif 'llama' in self.llm_name.lower():
             self.llm = LlamaCppWrapper(model_path=self.llm_name)
 
         print('Text-to-query initialized')
 
-    def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, openai_api_key: str = None):
+    def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, api_key: str = None):
         """
 
         :param question: natural language question
@@ -196,10 +244,18 @@ class PanguForPPOD:
         :param verbose: for debugging
         :return: a list of plans
         """
-        if openai_api_key is not None:
-            assert openai_api_key.startswith("sk-")
-            os.environ['OPENAI_API_KEY'] = openai_api_key
-        assert os.environ['OPENAI_API_KEY'] is not None, 'Please set OPENAI_API_KEY in environment variable'
+        if api_key is not None:
+            if self.llm_name.startswith('gpt-'):
+                assert api_key.startswith("sk-")
+                os.environ['OPENAI_API_KEY'] = api_key
+            assert os.environ['OPENAI_API_KEY'] is not None, 'Please set OPENAI_API_KEY in environment variable'
+
+        # load LLM
+        if self.llm is None:
+            if self.llm_name.startswith('gpt-'):
+                self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
+            elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
+                self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
 
         # from langchain.globals import set_llm_cache
         # from langchain_community.cache import SQLiteCache
@@ -234,7 +290,7 @@ class PanguForPPOD:
             for rtn_type in new_plans:
                 # convert plan to plan_str
                 for p in new_plans[rtn_type]:
-                    p.plan_str = lisp_to_repr(p.plan, self.prefixes, self.inv_label)
+                    p.plan_str = lisp_to_repr(p.plan, self.prefixes, self.inv_label, self.entity_to_label, self.predicate_to_label)
                 cur_plans.extend(new_plans[rtn_type])
             # recall using SentenceTransformerRetriever
             plan_ranker = SentenceTransformerRetriever([p.plan_str for p in cur_plans], model=self.retrieval_model)
@@ -287,31 +343,57 @@ class PanguForPPOD:
 
         # convert plans to SPARQL queries and get their execution results
         res = []
-        num_valid = 0
-        for plan in final_plans[:30]:
-            sparql = lisp_to_sparql(plan.plan)
-            rows = execute_query(sparql)
-            if len(rows) > 0:
-                num_valid += 1
+        num_valid_query = 0
+        if not self.use_kg_api:
+            for plan in final_plans[:30]:
+                sparql = lisp_to_sparql(plan.plan)
+                rows = execute_query(sparql)
+                if len(rows) > 0:
+                    num_valid_query += 1
 
-            labels = []  # get labels if the results are entities
-            for item in rows:
-                if item[0] in self.entity_to_label:
-                    labels.append(self.entity_to_label[item[0]])
-                else:
-                    labels.append(item[0])
-            assert len(rows) == len(labels)
-            res.append(
-                {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
-                 'sparql': sparql, 'results': rows, 'labels': labels})
+                labels = []  # get labels if the results are entities
+                for item in rows:
+                    if item[0] in self.entity_to_label:
+                        labels.append(self.entity_to_label[item[0]])
+                    else:
+                        labels.append(item[0])
+                assert len(rows) == len(labels)
+                res.append(
+                    {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
+                     'sparql': sparql, 'results': rows, 'labels': labels})
 
-            if num_valid >= top_k:
-                break
+                if num_valid_query >= top_k:
+                    break
 
-        res = res[:top_k]
-        if num_valid:
-            res = [r for r in res if len(r['results']) > 0]
-        return res
+            res = res[:top_k]
+            if num_valid_query:
+                res = [r for r in res if len(r['results']) > 0]
+            res = add_kg_api_to_queries(res)
+            return res
+        else:  # use_kg_api
+            for plan in final_plans[:30]:
+                results = execute_lisp_by_kg_api(plan.plan)
+                if len(results) > 0:
+                    num_valid_query += 1
+
+                labels = []  # get labels if the results are entities
+                for item in results:
+                    if item in self.entity_to_label:
+                        labels.append(self.entity_to_label[item])
+                    else:
+                        labels.append(item)
+                assert len(results) == len(labels)
+                res.append(
+                    {'input': question, 's-expression': plan.plan, 's-expression_repr': plan.plan_str, 'score': plan.score,
+                     'sparql': None, 'results': list(results), 'labels': labels})
+
+                if num_valid_query >= top_k:
+                    break
+
+            res = res[:top_k]
+            if num_valid_query:
+                res = [r for r in res if len(r['results']) > 0]
+            return res
 
     def retrieve_entity(self, question: str, top_k: int = 10, distinct: bool = True):
         return self.entity_retriever.get_top_k_sentences(question, top_k, distinct)
@@ -321,3 +403,7 @@ class PanguForPPOD:
 
     def retrieve_literal(self, question: str, top_k: int = 10, distinct: bool = True):
         return self.literal_retriever.get_top_k_sentences(question, top_k, distinct)
+
+
+pangu_for_sparql = PanguForPPOD(llm_name='gpt-4o', use_kg_api=False)
+pangu_for_kg_api = PanguForPPOD(llm_name='gpt-4o', use_kg_api=True)
