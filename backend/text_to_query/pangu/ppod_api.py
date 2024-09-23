@@ -100,8 +100,11 @@ def score_pairs_chat(question: str, plans, demo_retriever, demos, llm, beam_size
     for top_log in top_logprobs[:beam_size]:
         try:
             top_scores[plans[ord(top_log['token'].lower()) - 97]] = top_log['logprob']
+        except TypeError as e:
+            # print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            pass
         except Exception as e:
-            print('score_pairs_chat exception', e, 'TopLogprob token:', top_log['token'])
+            print(e)
     return top_scores
 
 
@@ -116,7 +119,7 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
         else:
             token = token.strip(')')
 
-        if inv is False:
+        if inv is False:  # could be entity or relation
             label = pangu_for_sparql.entity_to_label.get(token, None)
             if label is not None:
                 uuid = pangu_for_kg_api.label_to_entity.get(label, None)
@@ -125,6 +128,7 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
 
         label = pangu_for_sparql.predicate_to_label.get(token, None)
         if label is not None:
+            label = '_'.join(label.split(' '))
             uuid = pangu_for_kg_api.label_to_predicate.get(label, None)
             if uuid is not None:
                 lisp = lisp.replace(token, f"[{uuid[0]}]")
@@ -132,10 +136,15 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
     return lisp
 
 
+##This function's frontend changes like box colors are done in Sidebar.vue file
 def add_kg_api_to_queries(queries: List):
     for q in queries:
         kg_api_s_expr = convert_ppod_kg_lisp_to_kg_api_lisp(q['s-expression'])
-        q['kg_api_s_expr'] = kg_api_s_expr
+        from backend.milkOligoDB.src.parse_lisp_to_apis import process_lisp_expression
+        if 'https://raw.githubusercontent.com/adhollander/' not in kg_api_s_expr:
+            api_calls = process_lisp_expression(kg_api_s_expr.replace('[', '').replace(']', ''))
+            q['kg_api_s_expr'] = kg_api_s_expr
+            q['kg_api_call'] = api_calls
     return queries
 
 
@@ -219,6 +228,11 @@ class PanguForPPOD:
         self.llm_name = llm_name
         self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
+        if self.llm_name.startswith('gpt-'):
+            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key='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')
+        elif 'llama' in self.llm_name.lower():
+            self.llm = LlamaCppWrapper(model_path=self.llm_name)
+
         print('Text-to-query initialized')
 
     def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, api_key: str = None):
@@ -354,7 +368,7 @@ class PanguForPPOD:
             res = res[:top_k]
             if num_valid_query:
                 res = [r for r in res if len(r['results']) > 0]
-            # res = add_kg_api_to_queries(res)
+            res = add_kg_api_to_queries(res)
             return res
         else:  # use_kg_api
             for plan in final_plans[:30]:
