@@ -5,7 +5,7 @@
 # The action logs into Docker with the Github action environment secrets `DOCKERHUB_USERNAME`
 # and `DOCKERHUB_TOKEN`.
 # The action pulls the repo and builds both the frontend and backend images.
-# The action tags both images with dev, and {current date} tags for future reference.
+# The action tags both images with STAGE, and {current date} tags for future reference.
 #   - A prod and latest tag should be added, just haven't yet, implementation can happen once there's a full release.
 # Once pushed, the second job begins.
 # The second job sends a restart request to the frontend and backend pods. Every restart results in a 
@@ -21,13 +21,13 @@
 #   secrets.TAPIS_ICICLEAI_PROD_TOKEN: token for cgarcia
 #   vars.POD_ID_BACKEND: vadash
 #   vars.POD_ID_FRONTEND: vadashback
-#   vars.DEV_POD_ID_BACKEND: vadashdev   ### no dev yet!
-#   vars.DEV_POD_ID_FRONTNED: vadashbackdev   ### no dev yet!
+#   vars.STAGE_POD_ID_BACKEND: vadashstage   ### no stage yet!
+#   vars.STAGE_POD_ID_FRONTNED: vadashbackstage   ### no stage yet!
 
 name: Build, push, deploy images
 on:
   push:
-    branches: [ main, dev, release-* ]
+    branches: [ main, stage, release-* ]
   workflow_dispatch:
 
 jobs:
@@ -73,24 +73,24 @@ jobs:
             notchristiangarcia/va-v3-backend:${{ steps.get_tag_name.outputs.tag_name }},
             notchristiangarcia/va-v3-backend:${{ steps.date.outputs.date }}
 
-  deploy-images-dev:
+  deploy-images-stage:
     runs-on: ubuntu-latest
     environment: docker
     needs: [build-and-push-images]
     if:
-      contains('refs/heads/dev', github.ref)
+      contains('refs/heads/stage', github.ref)
     steps:
-    - name: Restart dev backend pod
+    - name: Restart stage backend pod
       uses: fjogeleit/http-request-action@v1
       with:
-        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.DEV_POD_ID_BACKEND }}/restart'
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.STAGE_POD_ID_BACKEND }}/restart'
         method: 'GET'
         customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLEAI_PROD_TOKEN }}"}'
 
-    - name: Restart dev frontend pod
+    - name: Restart stage frontend pod
       uses: fjogeleit/http-request-action@v1
       with:
-        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.DEV_POD_ID_FRONTEND }}/restart'
+        url: 'https://icicleai.tapis.io/v3/pods/${{ vars.STAGE_POD_ID_FRONTEND }}/restart'
         method: 'GET'
         customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLEAI_PROD_TOKEN }}"}'
   
