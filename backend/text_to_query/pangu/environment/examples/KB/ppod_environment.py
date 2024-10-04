@@ -367,6 +367,8 @@ class PPODEnv(Env):
         :param action: simply a subprogram
         :return: admissible classes and relations from this subprogram
         """
+        if len(action) > 256:
+            return {"Property": set(), "Classes": set(), "LiteralProperty": set()}
         if action[0] == '(' and action[-1] == ')':  # for subprogram
             if self.use_kg_api:
                 classes, relations = self.step_by_kg_api(action)

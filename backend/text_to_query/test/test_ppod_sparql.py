@@ -2,10 +2,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from pangu.ppod_api import pangu_for_sparql
-
 sys.path.append(str(Path(__file__).parent.absolute()) + '/../../..')
-
+from backend.text_to_query.pangu.ppod_api import pangu_for_sparql
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
