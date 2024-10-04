@@ -19,7 +19,7 @@ class queryHelper():
         self.relevantEntId = []
         self.relevantEntClass = []
         self.drawEntId = []
-        self.mode = "dev"
+        self.mode = "test"
     def readKG(self, file1, file2):
         g = rdflib.Graph()
         g.parse(file2, format="turtle")
