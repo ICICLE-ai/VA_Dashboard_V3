@@ -39,11 +39,9 @@ jobs:
         id: get_tag_name
         shell: bash
         run: echo "tag_name=$(echo ${GITHUB_REF#refs/heads/} | sed 's/main/latest/g' | sed 's/release-//g')" >> $GITHUB_OUTPUT
-
       - name: Get current date # get the date of the build
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -55,7 +53,7 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
+
       - uses: docker/build-push-action@v3
         name: Build & push tagged Docker backend image
         with:
@@ -107,7 +105,6 @@ jobs:
         url: 'https://icicleai.tapis.io/v3/pods/${{ vars.POD_ID_BACKEND }}/restart'
         method: 'GET'
         customHeaders: '{"Content-Type": "application/json", "X-Tapis-Token": "${{ secrets.TAPIS_ICICLEAI_PROD_TOKEN }}"}'
-
     - name: Restart frontend pod
       uses: fjogeleit/http-request-action@v1
       with:

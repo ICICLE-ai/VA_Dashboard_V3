@@ -63,6 +63,13 @@ watch(code, (newCode) => {
   console.log(props.data)
 }, {deep: true});
 
+watch(() => props.data.input, (newInput) => {
+  // Update the code when props.data.input changes
+  if (typeof newInput === 'string') {
+    code.value = newInput
+  }
+}, { immediate: true })
+
 </script>
 
 <template>

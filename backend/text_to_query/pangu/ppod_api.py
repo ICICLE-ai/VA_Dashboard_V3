@@ -136,6 +136,7 @@ def convert_ppod_kg_lisp_to_kg_api_lisp(lisp: str):
     return lisp
 
 
+##This function's frontend changes like box colors are done in Sidebar.vue file
 def add_kg_api_to_queries(queries: List):
     for q in queries:
         kg_api_s_expr = convert_ppod_kg_lisp_to_kg_api_lisp(q['s-expression'])
@@ -234,6 +235,11 @@ class PanguForPPOD:
         self.llm_name = llm_name
         self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
+        if self.llm_name.startswith('gpt-'):
+            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key='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')
+        elif 'llama' in self.llm_name.lower():
+            self.llm = LlamaCppWrapper(model_path=self.llm_name)
+
         print('Text-to-query initialized')
 
     def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, api_key: str = None):
