@@ -228,10 +228,10 @@ class PanguForPPOD:
         self.llm_name = llm_name
         self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
-        if self.llm_name.startswith('gpt-'):
-            self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key='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')
-        elif 'llama' in self.llm_name.lower():
-            self.llm = LlamaCppWrapper(model_path=self.llm_name)
+        # if self.llm_name.startswith('gpt-'):
+        #     self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
+        # elif 'llama' in self.llm_name.lower():
+        #     self.llm = LlamaCppWrapper(model_path=self.llm_name)
 
         print('Text-to-query initialized')
 
