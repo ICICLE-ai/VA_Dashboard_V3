@@ -145,6 +145,13 @@ def add_kg_api_to_queries(queries: List):
             api_calls = process_lisp_expression(kg_api_s_expr.replace('[', '').replace(']', ''))
             q['kg_api_s_expr'] = kg_api_s_expr
             q['kg_api_call'] = api_calls
+
+        kg_api_uuids = {}
+        for label in q['labels']:
+            if label in pangu_for_sparql.label_to_entity:
+                uuid = pangu_for_kg_api.label_to_entity.get(label, None)
+                kg_api_uuids[label] = uuid
+        q['kg_api_uuid'] = kg_api_uuids
     return queries
 
 
