@@ -18,6 +18,9 @@ RUN pip install -r requirements.txt
 COPY ./ ./backend
 COPY ./milkOligoDB ./backend/djangoBackend/backend/milkOligoDB
 COPY ./llama_service.py ./backend/djangoBackend/backend/llama_service.py
+COPY ./text_to_query/pangu ./backend/djangoBackend/pangu
+COPY ./text_to_query/data ./backend/djangoBackend/data
+COPY ./text_to_query/exp ./backend/djangoBackend/exp
 
 WORKDIR /app/backend/djangoBackend
 ENTRYPOINT uvicorn djangoBackend.asgi:application --host 0.0.0.0 --port 8000 --reload

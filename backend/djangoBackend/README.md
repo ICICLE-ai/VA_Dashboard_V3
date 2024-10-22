@@ -34,4 +34,5 @@ npm run dev
 Might need to do "npm install" if you get the error  'vite' is not recognized as an internal or external command
 
 ## SPARQL endpoint to run questions like "Find possible collaborators that work on water quality." on PPOD
-https://jupyter002-second.pods.tacc.develop.tapis.io/sparql
+https://jupyter002-second.pods.tacc.develop.tapis.io/sparql  
+URL can be changed with VIRTUOSO_BACKEND_URL environment variable in docker-compose.yml during docker deployment.

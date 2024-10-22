@@ -20,8 +20,9 @@ with open(rdf_file_path, "r") as f:
     ttl = f.read()
 g.parse(data=ttl, format="ttl", publicID='http:/')
 
+VIRTUOSO_BACKEND_URL=os.getenv('VIRTUOSO_BACKEND_URL', 'https://jupyter002-second.pods.tacc.develop.tapis.io/sparql')
 
-def execute_query(query: str, endpoint='https://jupyter002-second.pods.tacc.develop.tapis.io/sparql'):
+def execute_query(query: str, endpoint=VIRTUOSO_BACKEND_URL):
     if endpoint == 'rdflib':
         return execute_query_with_rdflib(query)
     return execute_query_with_virtuoso(query, endpoint)
@@ -43,7 +44,7 @@ def execute_query_with_rdflib(query: str) -> List[str]:
         return list(result)
 
 
-def execute_query_with_virtuoso(query: str, endpoint='https://jupyter002-second.pods.tacc.develop.tapis.io/sparql'):
+def execute_query_with_virtuoso(query: str, endpoint=VIRTUOSO_BACKEND_URL):
     """
     Using SPARQLWrapper to execute the query
     :param query:
