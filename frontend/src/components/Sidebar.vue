@@ -109,7 +109,8 @@ const current_y = ref(20)
 
 
 const wakeWordDetection = () => {
-  axios.post('http://127.0.0.1:8000/api/wake_and_asr/', {
+ // axios.post('http://127.0.0.1:8000/api/wake_and_asr/', {
+  client.post('/api/wake_and_asr/', {
     kwd: wakeWord.value
   }, {
     headers: {
@@ -144,7 +145,7 @@ const convertClass=(d)=>{
 
 const connect = () => {
       // Assuming the Django development server is running on localhost:8000
-      ws.value = new WebSocket('ws://127.0.0.1:8000/ws/query/');
+      ws.value = new WebSocket(`${import.meta.env.VITE_APP_BACKEND_BASE_URL}/ws/query/`);
 
       ws.value.onopen = () => {
         console.log('WebSocket connection established');
@@ -399,7 +400,8 @@ const text2query = () => {
     })
 
     loading_text2query.value = true;
-    axios.post('http://127.0.0.1:8000/api/text2query/', passed_data)
+    // axios.post('http://127.0.0.1:8000/api/text2query/', passed_data)
+    client.post('/api/text2query/', passed_data)
       .then(response => {
         // console.log( response['data']['result'])
 
