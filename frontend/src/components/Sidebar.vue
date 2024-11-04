@@ -12,6 +12,7 @@ library.add(faTable, faComment, faChartArea, faDiagramProject, faCircleDot, faPe
 import {useCardManage} from '@/stores/helper.js'
 import { storeToRefs } from 'pinia'
 import * as d3 from 'd3';
+import { client } from '../stores/client.js'
 
 function onDragStart(event, nodeInfo) {
   if (event.dataTransfer) {
@@ -110,7 +111,7 @@ const current_y = ref(20)
 
 const wakeWordDetection = () => {
  // axios.post('http://127.0.0.1:8000/api/wake_and_asr/', {
-  client.post('/api/wake_and_asr/', {
+  axios.post('/api/wake_and_asr/', {
     kwd: wakeWord.value
   }, {
     headers: {

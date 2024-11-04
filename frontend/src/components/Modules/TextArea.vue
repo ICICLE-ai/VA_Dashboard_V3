@@ -5,6 +5,7 @@ import { initialize } from '../../js/initialize.js'
 import Toolbar from './Toolbar.vue'
 import { ref, onMounted, defineEmits } from 'vue'
 import axios from 'axios'
+import { client } from '../../stores/client.js'
 
 const props = defineProps({
   data: {
@@ -35,7 +36,7 @@ const text2query = () => {
     const passed_data = { question: queryText, openai_api: openai_api.value }
     
     loading_text2query.value = true
-    axios.post('http://127.0.0.1:8000/api/text2query/', passed_data)
+    client.post('/api/text2query/', passed_data)
       .then(response => {
         if (response.data.result && response.data.result.length > 0) {
           const query = response.data.result[0].sparql

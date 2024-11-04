@@ -5,6 +5,7 @@ import {initialize} from '../../js/initialize.js'
 import { excelParser } from "../../js/excel-parser.js";
 import { VDataTable } from 'vuetify/labs/components'
 import axios from 'axios';
+import { client } from '../../stores/client.js'
 
 import Toolbar from './Toolbar.vue'
 import {ref} from 'vue'
@@ -33,7 +34,7 @@ const sparql_query = () => {
     }
     console.log('dddd', passed_data)
     loading_sparql_query_result.value = true
-    axios.post('http://127.0.0.1:8000/api/sparql_execute/', passed_data)
+    client.post('/api/sparql_execute/', passed_data)
       .then(response => {
         console.log(response)
         loading_sparql_query_result.value = false

@@ -11,7 +11,7 @@ services:
             - "5173:5173"
         restart: always
         environment:   
-            VITE_APP_BACKEND_BASE_URL: "http://127.0.0.1:8000"
+            VITE_APP_BACKEND_BASE_URL: "http://va3-backend:8000"
         networks:
             - va3-network
         #command: ["nginx", "-g", "daemon off;"]
