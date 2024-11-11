@@ -478,6 +478,11 @@ onMounted(connect);
         </div>
       </v-row>
       <v-row>
+        <div class="drag-node" :draggable="true" @dragstart="onDragStart($event, {type:'graphViewerForBackend', title:'Graph Viewer For API'})">
+          <font-awesome-icon :icon="['fas','diagram-project']" class="drag-icon"/>Graph Viewer For API
+        </div>
+      </v-row>
+      <v-row>
         <div class="drag-node" :draggable="true" @dragstart="onDragStart($event, {type:'sparqlEditor', title:'SPARQL Editor'})">
           <font-awesome-icon :icon="['fas','pen-to-square']" class="drag-icon"/>SPARQL Editor</div>
       </v-row>

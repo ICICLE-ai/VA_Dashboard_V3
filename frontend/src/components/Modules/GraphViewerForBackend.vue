@@ -14,28 +14,66 @@
       <div class="card-header">
         Graph Viewer
       </div>
+
+      <!-- Graph from API -->
+      <div v-if="concepts">
+        <h3>Concepts from IC-FOODS</h3>
+        <ul>
+          <!-- <li v-for="concept in concepts" :key="concept.id">{{ concept.name }}</li> -->
+        </ul>
+      </div>
+
       <div class="card-body">
         <div ref="subgraph" class="graph"></div>
       </div>
+
+      <!-- Textarea for node label input -->
       <div class="input-group mt-6">
-        <textarea v-model="nodeId" placeholder="Enter Node ID" class="form-control"></textarea>
-        <button @click="displaySubgraph" class="btn btn-primary">Display Node</button>
+        <textarea v-model="nodeLabelInput" placeholder="Enter Node Label" class="form-control"></textarea>
+        <button @click="checkNodeLabel" class="btn btn-primary">Check Node Label</button>
+      </div>
+
+      <!-- Display result if label exists -->
+      <div v-if="labelFound">
+        <p>Node label "{{ nodeLabelInput }}" exists in the API.</p>
+      </div>
+      <div v-else-if="labelChecked">
+        <p>Node label "{{ nodeLabelInput }}" does not exist in the API.</p>
+      </div>
+
+      <div>
+        <!-- <h4>Fetched Triples:</h4>
+        <ul>
+          <li v-for="(triple, index) in triples" :key="index">
+            <strong>Subject:</strong> {{ triple.subject }} <br>
+            <strong>Predicate:</strong> {{ triple.predicate }} <br>
+            <strong>Object:</strong> {{ triple.object }}
+          </li>
+        </ul> -->
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import * as d3 from 'd3';
 import { Handle, Position } from '@vue-flow/core';
 import { NodeResizer } from '@vue-flow/node-resizer';
 import Toolbar from './Toolbar.vue';
-import * as XLSX from 'xlsx';
+import axios from 'axios';
 
+// Reactive properties
 const nodeId = ref('');
+const nodeLabelInput = ref('');
 const subgraph = ref(null);
 const graphData = ref([]);
+const concepts = ref([]); // To store concepts
+const labelFound = ref(false);  // Flag to track if label was found
+const labelChecked = ref(false); // Flag to track if label check has occurred
+const predicates = ref([]);
+const isFetching = ref(false); // Flag for fetching state
+const triples = ref([]);
 
 const props = defineProps({
   data: Object,
@@ -43,17 +81,155 @@ const props = defineProps({
   type: String
 });
 
+
+
+
+
+
+// Watch for new data updates and draw graph
 watch(() => props.data.input, (newData, oldData) => {
   if (newData && newData !== oldData) {
     console.log('New data received:', newData);
     graphData.value = {
-      nodes: newData.map(node => ({ ...node, isInitial: true })), // Add isInitial property
+      nodes: newData.map(node => ({ ...node, isInitial: true })),
       edges: []
     };
     console.log('Graph data after initialization:', graphData.value);
     drawGraph(graphData.value, subgraph.value);
+    fetchConcepts();
   }
 });
+
+
+
+
+
+
+// Fetch concepts from the backend API
+//To view the api results for the graph
+onMounted(() => {
+  fetchConcepts();  // Call fetchConcepts when the component is mounted
+});
+
+// Fetch concepts function
+function fetchConcepts() {
+  console.log("fetchConcepts called");
+  axios.post('http://127.0.0.1:8000/api/get_concepts_for_graph/', {})
+    .then(response => {
+      if (Array.isArray(response.data)) {
+        concepts.value = response.data.map((concept) => ({ 
+          id: concept.uuid, // Use UUID as id
+          name: concept.label // Map label to name
+        }));
+      } else if (response.data && Array.isArray(response.data.result)) {
+        concepts.value = response.data.result.map((concept) => ({ 
+          id: concept.uuid, // Use UUID as id
+          name: concept.label // Map label to name
+        }));
+      } else {
+        console.error('Unexpected response format:', response.data);
+      }
+      
+      console.log("Concept values:", concepts.value);
+    })
+    .catch(error => {
+      console.error('Error fetching concepts:', error);
+    });
+}
+
+// Check if node label exists in concepts
+function checkNodeLabel() {
+  labelChecked.value = true; // Mark that the label check has occurred
+  const nodeLabel = nodeLabelInput.value.trim();
+  console.log("User input:", nodeLabel);
+
+  if (nodeLabel && concepts.value) {
+    const matchingLabels = concepts.value.filter(concept => 
+      concept.name.toLowerCase() === nodeLabel.toLowerCase()
+    );
+
+    labelFound.value = matchingLabels.length > 0;
+
+    if (labelFound.value) {
+      console.log(`Node label exists (${matchingLabels.length} matches):`);
+      matchingLabels.forEach((label, index) => {
+        console.log(`Match ${index + 1}:`, label.name, `UUID: ${label.id}`);
+        fetchPredicatesForUUID(label.id);
+      });
+    } else {
+      console.log('Node label does not exist in the fetched concepts.');
+    }
+  } else {
+    console.log('No input provided or concepts not fetched yet.');
+  }
+}
+
+// Function to fetch predicates based on UUID
+function fetchPredicatesForUUID(uuid) {
+  if (isFetching.value) return; // Exit if a fetch is already in progress
+
+  isFetching.value = true; // Set flag to indicate fetching has started
+  console.log(`Fetching predicates for UUID: ${uuid}`);
+
+  axios.post('http://127.0.0.1:8000/api/get_predicates/', { uuid })
+    .then(response => {
+      console.log("Full response:", response);
+      if (Array.isArray(response.data)) {
+        // Assuming the response includes subjects, predicates, and objects
+        triples.value = response.data.map(item => ({
+          subject: item.subject,   // Adjust according to your API response
+          predicate: item.predicate, // Adjust according to your API response
+          object: item.object        // Adjust according to your API response
+        }));
+
+        console.log("Fetched triples:", triples.value);
+
+        // Prepare data for drawing the graph
+        const graphData = prepareGraphData(triples.value);
+        drawGraph(graphData, subgraph.value); // Call drawGraph with new graph data
+      } else {
+        console.log("Unexpected data format:", response.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching predicates:', error);
+    })
+    .finally(() => {
+      isFetching.value = false; // Reset flag when fetch is complete
+    });
+}
+
+// Prepare graph data from triples
+function prepareGraphData(triples) {
+  const nodes = new Map(); // To keep track of unique nodes
+  const edges = []; // To store edges
+
+  triples.forEach(triple => {
+    // Add subject and object as nodes if they don't already exist
+    if (!nodes.has(triple.subject)) {
+      nodes.set(triple.subject, { id: triple.subject, label: triple.subject });
+    }
+    if (!nodes.has(triple.object)) {
+      nodes.set(triple.object, { id: triple.object, label: triple.object });
+    }
+
+    // Create an edge for the predicate
+    edges.push({ source: triple.subject, target: triple.object, label: triple.predicate });
+  });
+
+  return {
+    nodes: Array.from(nodes.values()), // Convert Map to array
+    edges: edges,
+  };
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -418,7 +594,14 @@ const findNodeIdByLabel = (label) => {
   }
 };
 
-
+// Function to display the subgraph based on the label entered
+function displayApiSubgraph() {
+  if (nodeLabel.value) {
+    console.log('Node Label:', nodeLabel.value); // Display node label in the console
+  } else {
+    console.log('Please enter a node label.');
+  }
+}
 
 const displaySubgraph = () => {
   const id = nodeId.value.trim();

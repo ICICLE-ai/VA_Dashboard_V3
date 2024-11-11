@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from pangu.ppod_api import pangu_for_kg_api
+# from pangu.ppod_api import pangu_for_kg_api
 
 sys.path.append(str(Path(__file__).parent.absolute()) + '/../..')
 from pandas import json_normalize

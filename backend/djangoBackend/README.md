@@ -35,3 +35,12 @@ Might need to do "npm install" if you get the error  'vite' is not recognized as
 
 ## SPARQL endpoint to run questions like "Find possible collaborators that work on water quality." on PPOD
 https://jupyter002-second.pods.tacc.develop.tapis.io/sparql
+
+
+
+## To run test_kg_api.py for debugging
+Go to backend\text_to_query
+python -m test.test_kg_api
+
+## If you need to set OPENAI api 
+set OPENAI_API_KEY=your_api_key_here
