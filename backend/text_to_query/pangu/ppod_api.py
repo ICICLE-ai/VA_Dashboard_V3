@@ -1,3 +1,4 @@
+import logging
 import sys
 from pathlib import Path
 
@@ -179,6 +180,7 @@ class PanguForPPOD:
             self.literals = []
             self.property_to_entity = self.kb_relations
             self.property_to_literal = []
+            self.version = 'kg_api'
         else:
             self.use_kg_api = False
             # load data
@@ -191,6 +193,7 @@ class PanguForPPOD:
             self.literals = json.load(open(os.path.join(proj_root, "data/literals.json"), 'r'))
             self.property_to_entity = json.load(open(os.path.join(proj_root, "data/predicate_entity.json"), 'r'))
             self.property_to_literal = json.load(open(os.path.join(proj_root, "data/predicate_literal.json"), 'r'))
+            self.version = 'sparql'
         self.prefixes = json.load(open(os.path.join(proj_root, "data/prefix.json"), 'r'))
         self.inv_label = json.load(open(os.path.join(proj_root, "data/inverse_predicate.json"), 'r'))
         self.demos = json.load(open(os.path.join(proj_root, "exp/sample_queries_train_294.json"), 'r'))  # in-context demo
@@ -235,11 +238,6 @@ class PanguForPPOD:
         self.llm_name = llm_name
         self.llm = None
         assert self.llm_name is not None, 'Please set LLM model name or model path'
-        # if self.llm_name.startswith('gpt-'):
-        #     self.llm = ChatOpenAI(model=self.llm_name, temperature=0, max_retries=5, timeout=60, openai_api_key=api_key)
-        # elif 'llama' in self.llm_name.lower():
-        #     self.llm = LlamaCppWrapper(model_path=self.llm_name)
-
         print('Text-to-query initialized')
 
     def text_to_query(self, question: str, top_k: int = 10, max_steps: int = 3, verbose: bool = False, api_key: str = None):
@@ -264,6 +262,7 @@ class PanguForPPOD:
             elif self.llm_name in ['llama3.1:8b', 'llama3:8b']:
                 self.llm = OllamaWrapper(model=self.llm_name, api_key=api_key)
 
+        print('Model loaded, start processing question: ' + question)
         # from langchain.globals import set_llm_cache
         # from langchain_community.cache import SQLiteCache
         # set_llm_cache(SQLiteCache(database_path="exp/.langchain.db"))  # doesn't support metadata for now
@@ -274,6 +273,7 @@ class PanguForPPOD:
         for e in pred_entities:
             pred_entity_ids.append(self.label_to_entity.get(e, None)[0])
         pred_literals = self.literal_retriever.get_top_k_sentences(question, 50, distinct=True)
+        print('Entity/literal retrieval done for question: ' + question)
 
         # initialize plans and start beam search
         init_plans = {'Entities': set(), 'Literals': set()}
@@ -287,6 +287,7 @@ class PanguForPPOD:
         final_step = cur_step  # final step maybe less than the max cur_step because of determination strategy
         searched_plans = defaultdict(list)  # {step (int, starting from 1): [plan objects]}
         while cur_step <= max_steps:
+            print(f'Pangu [{self.version}] start search in step {cur_step}')
             new_plans = self.symbolic_agent.propose_new_plans(use_all_previous=True)
             if len(new_plans) == 0:
                 final_step = cur_step - 1
