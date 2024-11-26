@@ -146,7 +146,7 @@ const convertClass=(d)=>{
 
 const connect = () => {
       // Assuming the Django development server is running on localhost:8000
-      ws.value = new WebSocket(`${import.meta.env.VITE_APP_BACKEND_BASE_URL}/ws/query/`);
+      ws.value = new WebSocket(`${import.meta.env.VA_BACKEND_URL}/ws/query/`);
 
       ws.value.onopen = () => {
         console.log('WebSocket connection established');
